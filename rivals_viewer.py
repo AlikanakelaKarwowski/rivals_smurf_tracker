@@ -32,22 +32,9 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-class EntryWidget(Static):
 
-    CSS = """
-    . {
-        layout: grid;
-        grid-size: 2;
-    }
-
-    """
-    
 class RivalsSmurfTracker(App):
     CSS = """
-    Screen {
-        layout: grid;
-        grid-size: 2;
-    }
     #submit {
         background: green;
         color: white;
