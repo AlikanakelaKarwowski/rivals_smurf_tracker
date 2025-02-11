@@ -2,7 +2,8 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from dbo import store_to_db, init_db, search_db, update_db, delete_db
+from dbo import store_to_db, init_db, search_rank_db, search_user_db, update_db, delete_db
+from utils.rank_utils import get_valid_ranks
 
 
 # Rank Mapping from highest to lowest
@@ -96,17 +97,17 @@ class RivalsSmurfTracker(App):
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         
         username = self.query_one("#edit_username")
-        username.display = "block"
+        username.display = True
         username.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 0))
         password = self.query_one("#edit_password")
-        password.display = "block"
+        password.display = True
         password.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1))
         rank = self.query_one("#edit_rank")
-        rank.display = "block"
+        rank.display = True
         rank.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2))
 
-        self.query_one("#save_edit").display = "block"
-        self.query_one("#delete").display = "block"
+        self.query_one("#save_edit").display = True
+        self.query_one("#delete").display = True
         
 
 
@@ -128,7 +129,12 @@ class RivalsSmurfTracker(App):
 
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
-        results = search_db(search_query, RANK_MAP, RANKS)
+        if search_query in RANK_MAP:
+            rank_value = RANK_MAP[search_query]
+            valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
+            results = search_rank_db(valid_ranks)
+        else:
+            results = search_user_db(search_query)
         
         table = self.query_one(DataTable)
         table.clear()
@@ -180,15 +186,15 @@ class RivalsSmurfTracker(App):
 
     def hide_edit(self):
         username = self.query_one("#edit_username")
-        username.display = "none"
+        username.display = False
         username.value = ""
         password = self.query_one("#edit_password")
-        password.display = "none"
+        password.display = False
         password.value = ""
         rank = self.query_one("#edit_rank")
-        rank.display = "none"
-        self.query_one("#save_edit").display = "none"
-        self.query_one("#delete").display = "none"
+        rank.display = False
+        self.query_one("#save_edit").display = False
+        self.query_one("#delete").display = False
 
 if __name__ == "__main__":
     init_db()
