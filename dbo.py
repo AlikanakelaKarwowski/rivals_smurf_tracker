@@ -1,5 +1,4 @@
 import sqlite3
-from utils.rank_utils import get_valid_ranks
 def init_db() -> None:
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -23,17 +22,21 @@ def store_to_db(username:str, password:str, rank:str, rank_value:int) -> None:
     conn.commit()
     conn.close()
 
-def search_db(search_query:str, RANK_MAP: dict[str,int], RANKS: list[str]) -> list[tuple[str,str,str]]:
+def search_rank_db(search_query:str) -> list[tuple[str,str,str]]:
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
-    if search_query in RANK_MAP:
-        rank_value = RANK_MAP[search_query]
-        valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
-        cursor.execute("SELECT username, password, rank FROM users WHERE rank_value IN ({})".format(
-            ",".join(map(str, valid_ranks))))
-    else:
-        cursor.execute("SELECT username, password, rank FROM users WHERE username LIKE ?", (f"%{search_query}%",))
+   
+    cursor.execute("SELECT username, password, rank FROM users WHERE rank_value IN ({})".format(
+        ",".join(map(str, search_query))))
         
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
+def search_user_db(search_query:str) -> list[tuple[str,str,str]]:
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT username, password, rank FROM users WHERE username LIKE ?", (f"%{search_query}%",))
     results = cursor.fetchall()
     conn.close()
     return results
