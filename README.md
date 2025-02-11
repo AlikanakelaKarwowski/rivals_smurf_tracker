@@ -51,3 +51,7 @@ If you don't care for setting it up, download the .exe from the releases page. I
 I just did this for a small group of friends who have smurfs to play with other friends in lower ranks. I literally wrote most of this in 2 hours and I'm sure theres issues, bugs, and better ways to do this. If you want to help make a PR and ill approve it if I think it helps.
 
 I also plan on updating and adding some features "soon".
+
+# FAQ
+
+If you cant see all the buttons, resize the window until i get scrolling working on the application.
