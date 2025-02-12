@@ -14,13 +14,14 @@ def init_db() -> None:
     conn.commit()
     conn.close()
 
-def store_to_db(username:str, password:str, rank:str, rank_value:int) -> None:
-    conn = sqlite3.connect("users.db")
+def store_to_db(username: str, password: str, rank: str, rank_value: int, db_connection=None) -> None:
+    conn = db_connection or sqlite3.connect("users.db")
     cursor = conn.cursor()
     cursor.execute("INSERT INTO users (username, password, rank, rank_value) VALUES (?, ?, ?, ?)",
-                    (username, password, rank, rank_value))
+                   (username, password, rank, rank_value))
     conn.commit()
-    conn.close()
+    if db_connection is None:  
+        conn.close()
 
 def search_rank_db(search_query:str) -> list[tuple[str,str,str]]:
     conn = sqlite3.connect("users.db")
