@@ -12,6 +12,8 @@ def in_memory_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT,
             password TEXT,
+            uuid Text,
+            level INTEGER,
             rank TEXT,
             rank_value INTEGER
         )
@@ -22,15 +24,11 @@ def in_memory_db():
 
 def test_store_to_db(in_memory_db):
     """Test if store_to_db correctly inserts data"""
-    store_to_db("test_user", "test_pass", "Eternal 1", 0, in_memory_db)
+    store_to_db("test_user", "test_pass","test_uuid", 1,"Eternal 1", 0, in_memory_db)
 
     cursor =in_memory_db.cursor()
-    cursor.execute("SELECT username, password, rank, rank_value FROM users WHERE username=?", ("test_user",))
+    cursor.execute("SELECT username, password, uuid, level, rank, rank_value FROM users WHERE username=?", ("test_user",))
     user = cursor.fetchone()
 
     assert user is not None
-    assert user == ("test_user", "test_pass", "Eternal 1", 0)
-
-
-
-
+    assert user == ("test_user", "test_pass", "test_uuid", 1, "Eternal 1", 0)

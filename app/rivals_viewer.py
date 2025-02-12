@@ -53,6 +53,9 @@ class RivalsSmurfTracker(App):
         display: none;
         background: maroon;
     }
+    .edit {
+        display: none;
+    }
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
@@ -60,6 +63,8 @@ class RivalsSmurfTracker(App):
         yield Header()
         yield Input(placeholder="Enter your username", id="username", classes="userpass")
         yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
+        yield Input(placeholder ="Enter your UUID", id="uuid", classes="userpass")
+        yield Input(placeholder="Enter your level", id="level", classes="userpass")
 
         yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
         yield Button("Submit", id="submit", classes="selection")
@@ -73,16 +78,19 @@ class RivalsSmurfTracker(App):
 
         yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
         yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
+        yield Input(placeholder="edit UUID", id="edit_uuid", classes="edit")
+        yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
 
         yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
         with Horizontal(id="edit_buttons"):
             yield Button("Save Changes", id="save_edit", classes="edit")
             yield Button("Delete", id="delete", classes="edit")
+        
         yield Footer()
 
 
     def on_mount(self) -> None:
-        self.query_one(DataTable).add_columns("Username", "Password", "Rank")
+        self.query_one(DataTable).add_columns("Username", "Password", "UUID", "Level", "Rank")
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit":
@@ -98,13 +106,19 @@ class RivalsSmurfTracker(App):
         
         username = self.query_one("#edit_username")
         username.display = True
-        username.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 0))
+        username.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 0)))
         password = self.query_one("#edit_password")
         password.display = True
-        password.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1))
+        password.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1)))
+        uuid = self.query_one("#edit_uuid")
+        uuid.display = True
+        uuid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)))
+
+        level = self.query_one("#edit_level")
+        level.display = True
+        level.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 3)))
         rank = self.query_one("#edit_rank")
         rank.display = True
-        rank.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2))
 
         self.query_one("#save_edit").display = True
         self.query_one("#delete").display = True
@@ -114,17 +128,23 @@ class RivalsSmurfTracker(App):
     def store_entry(self):
         username = self.query_one("#username", Input).value.strip()
         password = self.query_one("#password", Input).value.strip()
+        uuid = self.query_one("#uuid", Input).value.strip()
+        level = self.query_one("#level", Input).value
         rank = self.query_one("#rank", Select).value
 
-        if not username or not password or not rank:
+        if not username or not password or rank is Select.BLANK:
             return
 
-        store_to_db(username, password, rank, RANK_MAP[rank])
+        store_to_db(username, password, uuid, level, rank, RANK_MAP[rank])
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)
+        uuid_input = self.query_one("#uuid", Input)
+        level_input = self.query_one("#level", Input)
         username_input.value = ""
         password_input.value = ""
+        uuid_input.value = ""
+        level_input.value = ""
 
 
     def search_entries(self):
@@ -150,19 +170,23 @@ class RivalsSmurfTracker(App):
         else: 
             o_username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
             o_password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
-            o_rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            o_uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            o_level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
+            o_rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
             o_rank_value = RANK_MAP[o_rank]
 
         username = self.query_one("#edit_username", Input).value.strip()
         password = self.query_one("#edit_password", Input).value.strip()
+        uuid = self.query_one("#edit_uuid", Input).value.strip()
+        level = self.query_one("#edit_level", Input).value
         rank = self.query_one("#edit_rank", Select).value
         
-        if not username or not password or not rank:
+        if not username or not password or rank is Select.BLANK:
             return
 
         rank_value = RANK_MAP[rank]
         
-        update_db(username, o_username, password, o_password, rank, o_rank, rank_value, o_rank_value)
+        update_db(username, o_username, password, o_password, uuid, o_uuid, level, o_level, rank, o_rank, rank_value, o_rank_value)
 
         self.search_entries()
 
@@ -175,10 +199,12 @@ class RivalsSmurfTracker(App):
         else:
             username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
             password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
+            uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
             rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
             rank_value = RANK_MAP[rank]
 
-            delete_db(username, password, rank, rank_value)
+            delete_db(username, password, uuid, level, rank, rank_value)
 
         self.search_entries()
         self.hide_edit()
@@ -191,6 +217,12 @@ class RivalsSmurfTracker(App):
         password = self.query_one("#edit_password")
         password.display = False
         password.value = ""
+        uuid = self.query_one("#edit_uuid")
+        uuid.display = False
+        uuid.value = ""
+        level = self.query_one("#edit_level")
+        level.display = False
+        level.value = ""
         rank = self.query_one("#edit_rank")
         rank.display = False
         self.query_one("#save_edit").display = False
