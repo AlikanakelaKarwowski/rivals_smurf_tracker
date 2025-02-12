@@ -222,7 +222,7 @@ class RivalsSmurfTracker(App):
         uuid.value = ""
         level = self.query_one("#edit_level")
         level.display = False
-        level.value = 0
+        level.value = ""
         rank = self.query_one("#edit_rank")
         rank.display = False
         self.query_one("#save_edit").display = False
