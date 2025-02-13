@@ -25,8 +25,8 @@ def store_to_db(username: str, password: str, uuid: str, level: int, rank: str, 
     if db_connection is None:  
         conn.close()
 
-def search_rank_db(search_query:str) -> list[tuple[str,str,str]]:
-    conn = sqlite3.connect("users.db")
+def search_rank_db(search_query:str, db_connection=None) -> list[tuple[str,str,str]]:
+    conn = db_connection or sqlite3.connect("users.db")
     cursor = conn.cursor()
    
     cursor.execute("SELECT username, password, uuid, level, rank FROM users WHERE rank_value IN ({})".format(

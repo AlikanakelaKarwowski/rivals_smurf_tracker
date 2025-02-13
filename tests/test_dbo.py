@@ -48,3 +48,16 @@ def test_delete_db(in_memory_db):
     cursor.execute("SELECT username FROM users WHERE username=?", ("test_user",))
     user = cursor.fetchone()
     assert user is None
+
+def test_search_rank_db(in_memory_db):
+    """Test if search_rank_db correctly retrieves users"""
+
+    store_to_db("test_user1", "pass1", "uuid1", 10, "Eternal 1", 0, in_memory_db)
+    store_to_db("test_user2", "pass2", "uuid2", 15, "Gold 1", 10, in_memory_db)
+    store_to_db("test_user3", "pass3", "uuid3", 20, "Platinum 1", 5, in_memory_db)
+
+    results = search_rank_db([0, 5], in_memory_db)
+
+    assert len(results) == 2
+    assert ("test_user1", "pass1", "uuid1", 10, "Eternal 1") in results
+    assert ("test_user3", "pass3", "uuid3", 20, "Platinum 1") in results
