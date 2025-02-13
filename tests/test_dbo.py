@@ -61,3 +61,15 @@ def test_search_rank_db(in_memory_db):
     assert len(results) == 2
     assert ("test_user1", "pass1", "uuid1", 10, "Eternal 1") in results
     assert ("test_user3", "pass3", "uuid3", 20, "Platinum 1") in results
+
+def test_search_user_db(in_memory_db):
+    """Test if search_rank_db correctly retreivew users base on user name"""
+
+    store_to_db("test_user1", "pass1", "uuid1", 10, "Eternal 1", 0, in_memory_db)
+    store_to_db("test_user2", "pass2", "uuid2", 15, "Gold 1", 10, in_memory_db)
+    store_to_db("test_user3", "pass3", "uuid3", 20, "Platinum 1", 5, in_memory_db)
+
+    results = search_user_db("test_user1", in_memory_db)
+
+    assert len(results) == 1
+    assert ("test_user1", "pass1", "uuid1", 10, "Eternal 1") in results

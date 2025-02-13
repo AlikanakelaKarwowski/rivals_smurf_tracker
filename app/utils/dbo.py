@@ -36,8 +36,8 @@ def search_rank_db(search_query:str, db_connection=None) -> list[tuple[str,str,s
     conn.close()
     return results
 
-def search_user_db(search_query:str) -> list[tuple[str,str,str]]:
-    conn = sqlite3.connect("users.db")
+def search_user_db(search_query:str, db_connection=None) -> list[tuple[str,str,str]]:
+    conn = db_connection or sqlite3.connect("users.db")
     cursor = conn.cursor()
     cursor.execute("SELECT username, password, uuid, level, rank FROM users WHERE username LIKE ?", (f"%{search_query}%",))
     results = cursor.fetchall()
