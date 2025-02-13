@@ -73,3 +73,33 @@ def test_search_user_db(in_memory_db):
 
     assert len(results) == 1
     assert ("test_user1", "pass1", "uuid1", 10, "Eternal 1") in results
+
+    
+def test_update_db(in_memory_db):
+    """Test if update_db correctly updates user information"""
+
+    store_to_db("test_user1", "pass1", "uuid1", 10, "Eternal 1", 0, in_memory_db)
+
+    update_db(
+        username="Chillbert", o_username="test_user1",
+        password="Chi11", o_password="pass1",
+        uuid="new_uuid1", o_uuid="uuid1",
+        level=15, o_level=10,
+        rank="Bronze 1", o_rank="Eternal 1",
+        rank_value=10, o_rank_value=0,
+        db_connection=in_memory_db
+    )
+
+    cursor = in_memory_db.cursor()
+    cursor.execute("SELECT username, password, uuid, level, rank, rank_value FROM users WHERE username=?", ("Chillbert",))
+    user = cursor.fetchone()
+
+    # Assert for updated value
+    assert user is not None
+    assert user == ("Chillbert", "Chi11", "new_uuid1", 15, "Bronze 1", 10)
+
+    # Assert to check if old data does not exist
+    cursor.execute("SELECT username FROM users WHERE username=?", ("test_user1",))
+    old_user = cursor.fetchone()
+    assert old_user is None
+
