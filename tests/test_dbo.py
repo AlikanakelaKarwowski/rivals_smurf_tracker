@@ -36,7 +36,6 @@ def test_store_to_db(in_memory_db):
     assert user is not None
     assert user == ("test_user", "test_pass", "test_uuid", 1, "Eternal 1", 0)
 
-
 def test_delete_db(in_memory_db):
     """Test if delete_db correctly removes data"""
 
@@ -74,7 +73,6 @@ def test_search_user_db(in_memory_db):
     assert len(results) == 1
     assert ("test_user1", "pass1", "uuid1", 10, "Eternal 1") in results
 
-    
 def test_update_db(in_memory_db):
     """Test if update_db correctly updates user information"""
 
@@ -102,4 +100,3 @@ def test_update_db(in_memory_db):
     cursor.execute("SELECT username FROM users WHERE username=?", ("test_user1",))
     old_user = cursor.fetchone()
     assert old_user is None
-
