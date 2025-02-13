@@ -52,10 +52,13 @@ def update_db(username:str, o_username:str, password:str, o_password:str, uuid:s
     conn.commit()
     conn.close()
 
-def delete_db(username:str, password:str, rank:str, rank_value:int) -> None:
-    conn = sqlite3.connect("users.db")
+def delete_db(username: str, password: str, rank: str, rank_value: int, db_connection=None) -> None:
+    conn = db_connection or sqlite3.connect("users.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE username = ? AND password = ? AND rank = ? AND rank_value = ?",
-                    (username, password, rank, rank_value))
+    cursor.execute(
+        "DELETE FROM users WHERE username = ? AND password = ? AND rank = ? AND rank_value = ?",
+        (username, password, rank, rank_value),
+    )
     conn.commit()
-    conn.close()
+    if db_connection is None:
+        conn.close()
