@@ -201,7 +201,7 @@ class RivalsSmurfTracker(App):
             password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
             uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
             level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
-            rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
             rank_value = RANK_MAP[rank]
 
             delete_db(username, password, uuid, level, rank, rank_value)
