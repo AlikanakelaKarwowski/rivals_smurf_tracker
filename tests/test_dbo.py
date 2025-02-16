@@ -1,5 +1,6 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select
+from sqlalchemy import and_
 from app.utils.dbo import (
     User,
     store_to_db,
@@ -91,9 +92,8 @@ def test_update_db(in_memory_db):
         assert user.rank_value == 5
 
         # Assert old user no longer exists
-        old_user = session.exec(select(User).where(User.username == "old_user", User.uuid == "old_uuid")).first()
+        old_user = session.exec(select(User).where(and_(User.username == "old_user", User.uuid == "old_uuid"))).first()
         assert old_user is None
-
 
 def test_delete_db(in_memory_db):
     """Test if delete_db correctly removes a user from the database."""
@@ -110,6 +110,6 @@ def test_delete_db(in_memory_db):
     )
 
     with Session(in_memory_db) as session:
-        statement = select(User).where(User.username == "test_user", User.uuid == "del_uuid")
+        statement = select(User).where(and_(User.username == "test_user", User.uuid == "del_uuid"))
         user = session.exec(statement).first()
         assert user is None
