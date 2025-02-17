@@ -25,11 +25,11 @@ def store_to_db(username: str, password: str, uuid: str, level: int, rank: str, 
 def search_user_db(search_query: str, custom_engine=None) -> list[tuple[str,str,str]]:
     active_engine = custom_engine or engine
     with Session(active_engine) as session:
-        statement = select(User).where(User.username.contains(search_query))
+        statement = select(User).where(User.username.ilike(f"%{search_query}%"))# case-insensitivity search
         results = session.exec(statement).all()
         return [(u.username, u.password, u.uuid, u.level, u.rank) for u in results]
 
-def search_rank_db(search_query: str, custom_engine=None) -> list[tuple[str,str,str]]:
+def search_rank_db(search_query: str, custom_engine=None) -> list[tuple[str, str, str]]:
     active_engine = custom_engine or engine
     with Session(active_engine) as session:
         statement = select(User).where(User.rank_value.in_(search_query))
