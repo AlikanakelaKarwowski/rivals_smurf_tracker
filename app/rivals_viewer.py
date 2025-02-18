@@ -155,14 +155,20 @@ class RivalsSmurfTracker(App):
             if search_query in RANK_MAP:
                 rank_value = RANK_MAP[search_query]
                 valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
-                results = User.get_by_rank(session, valid_ranks)
+                results = User.get_users_by_ranks(session, valid_ranks)
             else:
-                results= User.get_by_username(session, search_query)
+                results = User.get_users_by_username(session, search_query)
         
         table = self.query_one(DataTable)
         table.clear()
         for row in results:
-            table.add_row(*row)
+            table.add_row(
+                row.username,
+                row.password,
+                row.uuid,
+                row.level,
+                row.rank
+            )
 
     
     
