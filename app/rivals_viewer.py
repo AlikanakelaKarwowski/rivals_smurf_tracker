@@ -2,8 +2,10 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from utils.dbo import store_to_db, init_db, search_rank_db, search_user_db, update_db, delete_db
+from utils.dbo import init_db, search_rank_db, search_user_db, update_db, delete_db
+from utils.dbo import User, engine
 from utils.rank_utils import get_valid_ranks
+from sqlmodel import Session
 
 
 # Rank Mapping from highest to lowest
@@ -27,8 +29,6 @@ class RivalsSmurfTracker(App):
         background: green;
         color: white;
     }
-
-
     #search_btn {
         background: blue;
         color: white;
@@ -134,8 +134,10 @@ class RivalsSmurfTracker(App):
 
         if not username or not password or rank is Select.BLANK:
             return
-
-        store_to_db(username, password, uuid, level, rank, RANK_MAP[rank])
+    
+        with Session(engine) as session:
+            new_user = User.create(session, username=username, password=password, uuid=uuid, level=level, rank=rank, rank_value=RANK_MAP[rank])
+            print(f"User Created: {new_user.username}")
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)

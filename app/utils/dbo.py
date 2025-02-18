@@ -10,17 +10,23 @@ class User(SQLModel, table=True):
     rank: str
     rank_value: int
     
+    def save(self, session: Session) -> None:
+        session.add(self)
+        session.commit()
+
+    @classmethod
+    def create(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> "User":
+        """Create and save a new user."""
+        user = cls(username=username, password=password, uuid=uuid, level=level, rank=rank, rank_value=rank_value)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+
 engine = create_engine("sqlite:///users.db")
 
 def init_db() -> None: 
     SQLModel.metadata.create_all(engine)
-
-def store_to_db(username: str, password: str, uuid: str, level: int, rank: str, rank_value: int, custom_engine=None) -> None:
-    active_engine = custom_engine or engine
-    user = User(username=username, password=password, uuid=uuid, level=level, rank=rank, rank_value=rank_value)
-    with Session(active_engine) as session:
-        session.add(user)
-        session.commit()
 
 def search_user_db(search_query: str, custom_engine=None) -> list[tuple[str,str,str]]:
     active_engine = custom_engine or engine
