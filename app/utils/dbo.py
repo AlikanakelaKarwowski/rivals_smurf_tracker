@@ -22,18 +22,18 @@ class User(SQLModel, table=True):
         session.commit()
         session.refresh(user)
         return user
+    
+    @classmethod
+    def get_by_username(cls, session: Session, search_query: str)  -> list[tuple[str,str,str]]:
+        """Search for users by username (case-insensitive)."""
+        statement = select(cls).where(cls.username.ilike(f"%{search_query}%"))
+        results = session.exec(statement).all()
+        return [(user.username, user.password, user.uuid, user.level, user.rank) for user in results]
 
 engine = create_engine("sqlite:///users.db")
 
 def init_db() -> None: 
     SQLModel.metadata.create_all(engine)
-
-def search_user_db(search_query: str, custom_engine=None) -> list[tuple[str,str,str]]:
-    active_engine = custom_engine or engine
-    with Session(active_engine) as session:
-        statement = select(User).where(User.username.ilike(f"%{search_query}%"))# case-insensitivity search
-        results = session.exec(statement).all()
-        return [(u.username, u.password, u.uuid, u.level, u.rank) for u in results]
 
 def search_rank_db(search_query: str, custom_engine=None) -> list[tuple[str, str, str]]:
     active_engine = custom_engine or engine
