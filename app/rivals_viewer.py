@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from utils.dbo import init_db, search_rank_db, update_db, delete_db
+from utils.dbo import init_db, update_db, delete_db
 from utils.dbo import User, engine
 from utils.rank_utils import get_valid_ranks
 from sqlmodel import Session
@@ -151,13 +151,13 @@ class RivalsSmurfTracker(App):
 
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
-        if search_query in RANK_MAP:
-            rank_value = RANK_MAP[search_query]
-            valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
-            results = search_rank_db(valid_ranks)
-        else:
-            with Session(engine) as session:
-              results= User.get_by_username(session, search_query)
+        with Session(engine) as session:
+            if search_query in RANK_MAP:
+                rank_value = RANK_MAP[search_query]
+                valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
+                results = User.get_by_rank(session, valid_ranks)
+            else:
+                results= User.get_by_username(session, search_query)
         
         table = self.query_one(DataTable)
         table.clear()

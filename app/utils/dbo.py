@@ -29,19 +29,19 @@ class User(SQLModel, table=True):
         statement = select(cls).where(cls.username.ilike(f"%{search_query}%"))
         results = session.exec(statement).all()
         return [(user.username, user.password, user.uuid, user.level, user.rank) for user in results]
+    
+    @classmethod
+    def get_by_rank(cls, session: Session, search_query: list[int]) -> list[tuple[str, str, str]]:
+        """Search for users by rank value."""
+        statement = select(cls).where(cls.rank_value.in_(search_query))
+        results = session.exec(statement).all()
+        return [(user.username, user.password, user.uuid, user.level, user.rank) for user in results]
 
 engine = create_engine("sqlite:///users.db")
 
 def init_db() -> None: 
     SQLModel.metadata.create_all(engine)
-
-def search_rank_db(search_query: str, custom_engine=None) -> list[tuple[str, str, str]]:
-    active_engine = custom_engine or engine
-    with Session(active_engine) as session:
-        statement = select(User).where(User.rank_value.in_(search_query))
-        results = session.exec(statement).all()
-        return [(u.username, u.password, u.uuid, u.level, u.rank) for u in results]
-    
+        
 def update_db(username: str, o_username: str, password: str, o_password: str, uuid: str, o_uuid: str, level: int, o_level: int, rank: str, o_rank: str, rank_value: int, o_rank_value: int, custom_engine=None) -> None:
     active_engine = custom_engine or engine
     with Session(active_engine) as session:
