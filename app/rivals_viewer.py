@@ -2,8 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from utils.dbo import init_db, update_db
-from utils.dbo import User, engine
+from utils.dbo import User, engine, init_db
 from utils.rank_utils import get_valid_ranks
 from sqlmodel import Session
 
@@ -193,7 +192,20 @@ class RivalsSmurfTracker(App):
 
         rank_value = RANK_MAP[rank]
         
-        update_db(username, o_username, password, o_password, uuid, o_uuid, level, o_level, rank, o_rank, rank_value, o_rank_value)
+        with Session(engine) as session:
+            update_user = User.update_user(
+                session, 
+                o_username, username, 
+                o_password, password, 
+                o_uuid, uuid, 
+                o_level, level, 
+                o_rank, rank, 
+                o_rank_value, rank_value
+            )
+        if update_user:
+            print(f"Updated User: {update_user.username}")
+        else:
+            print(f"Failed to update User: {o_username}")
 
         self.search_entries()
 

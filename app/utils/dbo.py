@@ -34,6 +34,43 @@ class User(SQLModel, table=True):
         """Search for users by rank value."""
         statement = select(cls).where(cls.rank_value.in_(search_query))
         return  session.exec(statement).all()
+
+    @classmethod
+    def update_user(
+        cls, 
+        session: Session, 
+        o_username: str, username: str, 
+        o_password: str, password: str, 
+        o_uuid: str, uuid: str, 
+        o_level: int, level: int, 
+        o_rank: str, rank: str, 
+        o_rank_value: int, rank_value: int
+    )  -> Optional["User"]:
+        """Update user attributes."""
+        statement = select(cls).where(
+            cls.username == o_username,
+            cls.password == o_password,
+            cls.uuid == o_uuid,
+            cls.level == o_level,
+            cls.rank == o_rank,
+            cls.rank_value == o_rank_value
+        )
+        user = session.exec(statement).first()
+        
+        if not user:
+            return None
+
+        user.username = username
+        user.password = password
+        user.uuid = uuid
+        user.level = level
+        user.rank = rank
+        user.rank_value = rank_value
+
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
     
     @classmethod
     def delete_user(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> bool:
@@ -59,16 +96,3 @@ engine = create_engine("sqlite:///users.db")
 def init_db() -> None: 
     SQLModel.metadata.create_all(engine)
         
-def update_db(username: str, o_username: str, password: str, o_password: str, uuid: str, o_uuid: str, level: int, o_level: int, rank: str, o_rank: str, rank_value: int, o_rank_value: int, custom_engine=None) -> None:
-    active_engine = custom_engine or engine
-    with Session(active_engine) as session:
-        statement = select(User).where(User.username == o_username, User.password == o_password, User.uuid == o_uuid, User.level == o_level, User.rank == o_rank, User.rank_value == o_rank_value)
-        user = session.exec(statement).first()
-        user.username = username
-        user.password = password
-        user.uuid = uuid
-        user.level = level
-        user.rank = rank
-        user.rank_value = rank_value
-        session.add(user)
-        session.commit()
