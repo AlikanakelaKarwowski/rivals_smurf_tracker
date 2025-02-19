@@ -11,10 +11,11 @@ def in_memory_db():
     yield engine
     engine.dispose()
 
+# create_user test group
 def test_create_user(in_memory_db):
     """Test if User.create correctly inserts data into the in-memory database."""
     with Session(in_memory_db) as session:
-        User.create(session, "test_user", "test_pass", "test_uuid", 1, "Eternal 1", 0)
+        User.create_user(session, "test_user", "test_pass", "test_uuid", 1, "Eternal 1", 0)
     
         statement = select(User).where(User.username == "test_user")
         user = session.exec(statement).first()
@@ -27,11 +28,12 @@ def test_create_user(in_memory_db):
         assert user.rank == "Eternal 1"
         assert user.rank_value == 0
 
+
 def test_get_users_by_username(in_memory_db):
     """Test if User.get_users_by_username retrieves users by username."""
     with Session(in_memory_db) as session:
-        User.create(session, "test_user1", "pass1", "uuid1", 10, "Gold 1", 5)
-        User.create(session, "test_user2", "pass2", "uuid2", 20, "Silver 3", 3)
+        User.create_user(session, "test_user1", "pass1", "uuid1", 10, "Gold 1", 5)
+        User.create_user(session, "test_user2", "pass2", "uuid2", 20, "Silver 3", 3)
     
         results = User.get_users_by_username(session, "test_user1")
         assert len(results) == 1
@@ -40,9 +42,9 @@ def test_get_users_by_username(in_memory_db):
 def test_get_users_by_ranks(in_memory_db):
     """Test if User.get_users_by_ranks retrieves users by rank value."""
     with Session(in_memory_db) as session:
-        User.create(session, "test_user1", "pass1", "uuid1", 15, "Gold 1", 10)
-        User.create(session, "test_user2", "pass2", "uuid2", 18, "Gold 2", 11)
-        User.create(session, "test_user3", "pass3", "uuid3", 25, "Platinum 1", 15)
+        User.create_user(session, "test_user1", "pass1", "uuid1", 15, "Gold 1", 10)
+        User.create_user(session, "test_user2", "pass2", "uuid2", 18, "Gold 2", 11)
+        User.create_user(session, "test_user3", "pass3", "uuid3", 25, "Platinum 1", 15)
     
         results = User.get_users_by_ranks(session, [10, 11])
         assert len(results) == 2
@@ -54,7 +56,7 @@ def test_get_users_by_ranks(in_memory_db):
 def test_update_user(in_memory_db):
     """Test if User.update_user correctly updates user information."""
     with Session(in_memory_db) as session:
-        User.create(session, "old_user", "old_pass", "old_uuid", 30, "Bronze 1", 1)
+        User.create_user(session, "old_user", "old_pass", "old_uuid", 30, "Bronze 1", 1)
     
         update_user = User.update_user(session, "old_user", "Chillbert", "old_pass", "Chi11",
                                        "old_uuid", "new_uuid", 30, 40, "Bronze 1", "Silver 2", 1, 5)
@@ -76,7 +78,7 @@ def test_update_user(in_memory_db):
 def test_delete_user(in_memory_db):
     """Test if User.delete_user correctly removes a user from database."""
     with Session(in_memory_db) as session:
-        User.create(session, "test_user", "del_pass", "del_uuid", 50, "Diamond 3", 13)
+        User.create_user(session, "test_user", "del_pass", "del_uuid", 50, "Diamond 3", 13)
     
         success = User.delete_user(session, "test_user", "del_pass", "del_uuid", 50, "Diamond 3", 13)
         assert success is True
