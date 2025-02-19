@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
         session.commit()
 
     @classmethod
-    def create(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> "User":
+    def create_user(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> "User":
         """Create and save a new user."""
         user = cls(username=username, password=password, uuid=uuid, level=level, rank=rank, rank_value=rank_value)
         session.add(user)
