@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from utils.dbo import init_db, update_db, delete_db
+from utils.dbo import init_db, update_db
 from utils.dbo import User, engine
 from utils.rank_utils import get_valid_ranks
 from sqlmodel import Session
@@ -170,8 +170,6 @@ class RivalsSmurfTracker(App):
                 row.rank
             )
 
-    
-    
     def save_edit(self):
         selected_row = self.query_one(DataTable).cursor_row
         if selected_row is None:
@@ -213,7 +211,11 @@ class RivalsSmurfTracker(App):
             rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
             rank_value = RANK_MAP[rank]
 
-            delete_db(username, password, uuid, level, rank, rank_value)
+            with Session(engine) as session:
+                if User.delete_user(session, username, password, uuid, level, rank, rank_value):
+                    print(f"Deleted User: {username}")
+                else:
+                    print(f"Failed to delete User: {username}")
 
         self.search_entries()
         self.hide_edit()

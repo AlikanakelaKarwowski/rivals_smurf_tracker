@@ -34,6 +34,25 @@ class User(SQLModel, table=True):
         """Search for users by rank value."""
         statement = select(cls).where(cls.rank_value.in_(search_query))
         return  session.exec(statement).all()
+    
+    @classmethod
+    def delete_user(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> bool:
+        """Delete a user from the database by matching all attributes."""
+        statement = select(cls).where(
+            cls.username == username,
+            cls.password == password,
+            cls.uuid == uuid,
+            cls.level == level,
+            cls.rank == rank,
+            cls.rank_value == rank_value
+        )
+        user = session.exec(statement).first()
+        if not user:
+            return False 
+        
+        session.delete(user)
+        session.commit()
+        return True
 
 engine = create_engine("sqlite:///users.db")
 
@@ -53,20 +72,3 @@ def update_db(username: str, o_username: str, password: str, o_password: str, uu
         user.rank_value = rank_value
         session.add(user)
         session.commit()
-
-def delete_db(username: str, password: str, uuid: str, level: int, rank: str, rank_value: int, custom_engine=None) -> None:
-    active_engine = custom_engine or engine
-    with Session(active_engine) as session:
-        statement = select(User).where(
-            User.username == username,
-            User.password == password,
-            User.uuid == uuid,
-            User.level == level,
-            User.rank == rank,
-            User.rank_value == rank_value
-            
-        )
-        user = session.exec(statement).first()
-        session.delete(user)
-        session.commit()
-        
