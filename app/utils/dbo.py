@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Session, create_engine, select
+from sqlmodel import SQLModel, Field, Session, create_engine, select, and_
 from typing import Optional
 
 class User(SQLModel, table=True):
@@ -24,6 +24,12 @@ class User(SQLModel, table=True):
         return user
     
     @classmethod
+    def get_user_by_username(cls, session: Session, username: str, uuid:str) -> Optional["User"]:
+        """Retrieve a user by username and uuid."""
+        statement = select(cls).where(and_(cls.username == username, cls.uuid == uuid))
+        return session.exec(statement).first()
+    
+    @classmethod
     def get_users_by_username(cls, session: Session, search_query: str)  -> list["User"]:
         """Search for users by username (case-insensitive)."""
         statement = select(cls).where(cls.username.ilike(f"%{search_query}%"))
@@ -35,42 +41,19 @@ class User(SQLModel, table=True):
         statement = select(cls).where(cls.rank_value.in_(search_query))
         return  session.exec(statement).all()
 
-    @classmethod
-    def update_user(
-        cls, 
-        session: Session, 
-        o_username: str, username: str, 
-        o_password: str, password: str, 
-        o_uuid: str, uuid: str, 
-        o_level: int, level: int, 
-        o_rank: str, rank: str, 
-        o_rank_value: int, rank_value: int
-    )  -> Optional["User"]:
+
+    def update_user(self, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int)  -> None:
         """Update user attributes."""
-        statement = select(cls).where(
-            cls.username == o_username,
-            cls.password == o_password,
-            cls.uuid == o_uuid,
-            cls.level == o_level,
-            cls.rank == o_rank,
-            cls.rank_value == o_rank_value
-        )
-        user = session.exec(statement).first()
-        
-        if not user:
-            return None
+        self.username = username
+        self.password = password
+        self.uuid = uuid
+        self.level = level
+        self.rank = rank
+        self.rank_value = rank_value
 
-        user.username = username
-        user.password = password
-        user.uuid = uuid
-        user.level = level
-        user.rank = rank
-        user.rank_value = rank_value
-
-        session.add(user)
+        session.add(self)
         session.commit()
-        session.refresh(user)
-        return user
+        session.refresh(self)
     
     @classmethod
     def delete_user(cls, session: Session, username: str, password: str, uuid: str, level: int, rank: str, rank_value: int) -> bool:

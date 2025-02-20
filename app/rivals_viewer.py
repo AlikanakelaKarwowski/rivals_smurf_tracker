@@ -122,8 +122,6 @@ class RivalsSmurfTracker(App):
         self.query_one("#save_edit").display = True
         self.query_one("#delete").display = True
         
-
-
     def store_entry(self):
         username = self.query_one("#username", Input).value.strip()
         password = self.query_one("#password", Input).value.strip()
@@ -174,12 +172,8 @@ class RivalsSmurfTracker(App):
         if selected_row is None:
             return
         else: 
-            o_username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
-            o_password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
-            o_uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
-            o_level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
-            o_rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
-            o_rank_value = RANK_MAP[o_rank]
+           o_username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
+           o_uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
 
         username = self.query_one("#edit_username", Input).value.strip()
         password = self.query_one("#edit_password", Input).value.strip()
@@ -193,19 +187,12 @@ class RivalsSmurfTracker(App):
         rank_value = RANK_MAP[rank]
         
         with Session(engine) as session:
-            update_user = User.update_user(
-                session, 
-                o_username, username, 
-                o_password, password, 
-                o_uuid, uuid, 
-                o_level, level, 
-                o_rank, rank, 
-                o_rank_value, rank_value
-            )
-        if update_user:
-            print(f"Updated User: {update_user.username}")
-        else:
-            print(f"Failed to update User: {o_username}")
+            user = User.get_user_by_username(session, o_username, o_uuid)
+            if user:
+                user.update_user(session, username, password, uuid, level, rank, rank_value)
+                print(f"Updated User: {user.username}")
+            else:
+                print(f"Failed to find User: {o_username} ")
 
         self.search_entries()
 
