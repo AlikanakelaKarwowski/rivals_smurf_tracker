@@ -50,6 +50,37 @@ def test_create_user(in_memory_db):
         assert user.rank == "Eternal 1"
         assert user.rank_value == 0
 
+def test_create_duplicate_user(in_memory_db):
+    """Test that creating a user with a duplicate username and uid is handled correctly."""
+    with Session(in_memory_db) as session:
+
+        user1 = User.create_user(session, "test_user", "test_pass", "test_uid", 1, "Eternal 1", 0)
+        assert user1 is not None 
+
+        # Assert to create a duplicate user
+        user2 = User.create_user(session, "test_user", "test_pass2", "test_uid", 2, "Eternal 2", 1)
+        assert user2 is None  
+
+        # Assert that only one user exists in the database
+        users = session.exec(select(User).where(User.username == "test_user")).all()
+        assert len(users) == 1
+        assert users[0].username == "test_user"
+        assert users[0].uid == "test_uid"
+
+def test_does_user_exists(in_memory_db):
+    """Test if does_user_exists correctly identifies existing and non-existing users."""
+    with Session(in_memory_db) as session:
+       
+        User.create_user(session, "test_user", "test_pass", "test_uid", 1, "Eternal 1", 0)
+        
+        # Assert if the user exists
+        exists = User.does_user_exists(session, "test_user", "test_uid")
+        assert exists is True 
+
+        # Assert if a non-existing user exists
+        not_exists = User.does_user_exists(session, "non_existing_user", "non_existing_uid")
+        assert not_exists is False  
+
 def test_get_user_by_username(in_memory_db):
     """Test if User.get_user_by_username retrieves a single user correctly."""
     with Session(in_memory_db) as session:
