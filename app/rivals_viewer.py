@@ -134,7 +134,10 @@ class RivalsSmurfTracker(App):
     
         with Session(engine) as session:
             new_user = User.create_user(session, username=username, password=password, uid=uid, level=level, rank=rank, rank_value=RANK_MAP[rank])
-            print(f"User Created: {new_user.username}")
+            if new_user is None:
+                print(f"User already exist!: {username}")
+            else:
+                print(f"User Created: {new_user.username}")
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)
