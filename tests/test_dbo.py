@@ -29,6 +29,21 @@ def test_create_user(in_memory_db):
         assert user.rank_value == 0
 
 
+def test_get_user_by_username(in_memory_db):
+    """Test if User.get_user_by_username retrieves a single user correctly."""
+    with Session(in_memory_db) as session:
+        created_user = User.create_user(session, "test_user", "test_pass", "test_uuid", 25, "Gold 2", 7)
+
+        user = User.get_user_by_username(session, "test_user", "test_uuid")
+
+        assert user is not None
+        assert user.username == created_user.username
+        assert user.password == created_user.password
+        assert user.uuid == created_user.uuid
+        assert user.level == created_user.level
+        assert user.rank == created_user.rank
+        assert user.rank_value == created_user.rank_value
+
 def test_get_users_by_username(in_memory_db):
     """Test if User.get_users_by_username retrieves users by username."""
     with Session(in_memory_db) as session:
@@ -56,23 +71,28 @@ def test_get_users_by_ranks(in_memory_db):
 def test_update_user(in_memory_db):
     """Test if User.update_user correctly updates user information."""
     with Session(in_memory_db) as session:
-        User.create_user(session, "old_user", "old_pass", "old_uuid", 30, "Bronze 1", 1)
-    
-        update_user = User.update_user(session, "old_user", "Chillbert", "old_pass", "Chi11",
-                                       "old_uuid", "new_uuid", 30, 40, "Bronze 1", "Silver 2", 1, 5)
-        
-        # Assert user has been updated
-        assert update_user is not None
-        assert update_user.username == "Chillbert"
-        assert update_user.password == "Chi11"
-        assert update_user.uuid == "new_uuid"
-        assert update_user.level == 40
-        assert update_user.rank == "Silver 2"
-        assert update_user.rank_value == 5
+        user = User.create_user(session, "old_user", "old_pass", "old_uuid", 30, "Bronze 1", 1)
 
-        # Assert old user no longer exists
-        old_user = session.exec(select(User).where(and_(User.username == "old_user", User.uuid == "old_uuid"))).first()
-        assert old_user is None
+        user = session.exec(select(User).where(User.username == "old_user")).first()
+        assert user is not None  # Assert user not None
+
+        user.update_user(session, "Chillbert", "Chi11", "new_uuid", 40, "Silver 2", 5)
+
+        updated_user = session.exec(select(User).where(User.uuid == "new_uuid")).first()
+
+         # Assert user has been updated
+        assert updated_user is not None
+        assert updated_user.username == "Chillbert"
+        assert updated_user.password == "Chi11"
+        assert updated_user.uuid == "new_uuid"
+        assert updated_user.level == 40
+        assert updated_user.rank == "Silver 2"
+        assert updated_user.rank_value == 5
+
+        
+        old_user = session.exec(select(User).where(User.username == "old_user")).first()
+        assert old_user is None # Assert old user no longer exists
+
 
 
 def test_delete_user(in_memory_db):
