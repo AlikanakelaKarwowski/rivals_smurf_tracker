@@ -62,7 +62,7 @@ class RivalsSmurfTracker(App):
         yield Header()
         yield Input(placeholder="Enter your username", id="username", classes="userpass")
         yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
-        yield Input(placeholder ="Enter your UUID", id="uuid", classes="userpass")
+        yield Input(placeholder ="Enter your UID", id="uid", classes="userpass")
         yield Input(placeholder="Enter your level", id="level", classes="userpass")
 
         yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
@@ -77,7 +77,7 @@ class RivalsSmurfTracker(App):
 
         yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
         yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
-        yield Input(placeholder="edit UUID", id="edit_uuid", classes="edit")
+        yield Input(placeholder="edit uid", id="edit_uid", classes="edit")
         yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
 
         yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
@@ -89,7 +89,7 @@ class RivalsSmurfTracker(App):
 
 
     def on_mount(self) -> None:
-        self.query_one(DataTable).add_columns("Username", "Password", "UUID", "Level", "Rank")
+        self.query_one(DataTable).add_columns("Username", "Password", "uid", "Level", "Rank")
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit":
@@ -109,9 +109,9 @@ class RivalsSmurfTracker(App):
         password = self.query_one("#edit_password")
         password.display = True
         password.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1)))
-        uuid = self.query_one("#edit_uuid")
-        uuid.display = True
-        uuid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)))
+        uid = self.query_one("#edit_uid")
+        uid.display = True
+        uid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)))
 
         level = self.query_one("#edit_level")
         level.display = True
@@ -125,7 +125,7 @@ class RivalsSmurfTracker(App):
     def store_entry(self):
         username = self.query_one("#username", Input).value.strip()
         password = self.query_one("#password", Input).value.strip()
-        uuid = self.query_one("#uuid", Input).value.strip()
+        uid = self.query_one("#uid", Input).value.strip()
         level = self.query_one("#level", Input).value
         rank = self.query_one("#rank", Select).value
 
@@ -133,16 +133,16 @@ class RivalsSmurfTracker(App):
             return
     
         with Session(engine) as session:
-            new_user = User.create_user(session, username=username, password=password, uuid=uuid, level=level, rank=rank, rank_value=RANK_MAP[rank])
+            new_user = User.create_user(session, username=username, password=password, uid=uid, level=level, rank=rank, rank_value=RANK_MAP[rank])
             print(f"User Created: {new_user.username}")
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)
-        uuid_input = self.query_one("#uuid", Input)
+        uid_input = self.query_one("#uid", Input)
         level_input = self.query_one("#level", Input)
         username_input.value = ""
         password_input.value = ""
-        uuid_input.value = ""
+        uid_input.value = ""
         level_input.value = ""
 
 
@@ -162,7 +162,7 @@ class RivalsSmurfTracker(App):
             table.add_row(
                 row.username,
                 row.password,
-                row.uuid,
+                row.uid,
                 row.level,
                 row.rank
             )
@@ -173,11 +173,11 @@ class RivalsSmurfTracker(App):
             return
         else: 
            o_username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
-           o_uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+           o_uid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
 
         username = self.query_one("#edit_username", Input).value.strip()
         password = self.query_one("#edit_password", Input).value.strip()
-        uuid = self.query_one("#edit_uuid", Input).value.strip()
+        uid = self.query_one("#edit_uid", Input).value.strip()
         level = self.query_one("#edit_level", Input).value
         rank = self.query_one("#edit_rank", Select).value
         
@@ -187,9 +187,9 @@ class RivalsSmurfTracker(App):
         rank_value = RANK_MAP[rank]
         
         with Session(engine) as session:
-            user = User.get_user_by_username(session, o_username, o_uuid)
+            user = User.get_user_by_username(session, o_username, o_uid)
             if user:
-                user.update_user(session, username, password, uuid, level, rank, rank_value)
+                user.update_user(session, username, password, uid, level, rank, rank_value)
                 print(f"Updated User: {user.username}")
             else:
                 print(f"Failed to find User: {o_username} ")
@@ -205,13 +205,13 @@ class RivalsSmurfTracker(App):
         else:
             username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
             password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
-            uuid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            uid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
             level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
             rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
             rank_value = RANK_MAP[rank]
 
             with Session(engine) as session:
-                if User.delete_user(session, username, password, uuid, level, rank, rank_value):
+                if User.delete_user(session, username, password, uid, level, rank, rank_value):
                     print(f"Deleted User: {username}")
                 else:
                     print(f"Failed to delete User: {username}")
@@ -227,9 +227,9 @@ class RivalsSmurfTracker(App):
         password = self.query_one("#edit_password")
         password.display = False
         password.value = ""
-        uuid = self.query_one("#edit_uuid")
-        uuid.display = False
-        uuid.value = ""
+        uid = self.query_one("#edit_uid")
+        uid.display = False
+        uid.value = ""
         level = self.query_one("#edit_level")
         level.display = False
         level.value = ""
