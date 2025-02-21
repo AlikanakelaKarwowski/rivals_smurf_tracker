@@ -33,7 +33,6 @@ def in_memory_db():
     yield engine
     engine.dispose()
 
-
 # create_user test group
 def test_create_user(in_memory_db):
     """Test if User.create correctly inserts data into the in-memory database."""
@@ -50,7 +49,6 @@ def test_create_user(in_memory_db):
         assert user.level == 1
         assert user.rank == "Eternal 1"
         assert user.rank_value == 0
-
 
 def test_get_user_by_username(in_memory_db):
     """Test if User.get_user_by_username retrieves a single user correctly."""
@@ -91,6 +89,7 @@ def test_get_users_by_ranks(in_memory_db):
         assert "test_user2" in usernames
         assert "test_user3" not in usernames
 
+# update_user test group
 def test_update_user(in_memory_db):
     """Test if User.update_user correctly updates user information."""
     with Session(in_memory_db) as session:
@@ -116,8 +115,17 @@ def test_update_user(in_memory_db):
         old_user = session.exec(select(User).where(User.username == "old_user")).first()
         assert old_user is None # Assert old user no longer exists
 
+def test_update_non_existent_user(in_memory_db):
+    """Test that updating a non-existent user fails gracefully."""
+    with Session(in_memory_db) as session:
+        user = session.exec(select(User).where(User.username == "non_exist_user")).first()
+        assert user is None  
 
+        
+        with pytest.raises(AttributeError):
+            user.update_user(session, "new_user", "new_pass", "new_uuid", 40, "Silver 2", 5)
 
+# delete_user test group
 def test_delete_user(in_memory_db):
     """Test if User.delete_user correctly removes a user from database."""
     with Session(in_memory_db) as session:
@@ -129,3 +137,18 @@ def test_delete_user(in_memory_db):
         statement = select(User).where(and_(User.username == "test_user", User.uuid == "del_uuid"))
         user = session.exec(statement).first()
         assert user is None
+
+def test_delete_non_existent_user(in_memory_db):
+    """Test that deleting a non-exist user fails gracefully."""
+    with Session(in_memory_db) as session:
+        success = User.delete_user(session, "Im_not_real", "pass", "uuid", 1, "Rank", 0)
+        assert success is False 
+
+def test_empty_database_retrieval(in_memory_db):
+    """Test that retrieving users from an empty database returns an empty list."""
+    with Session(in_memory_db) as session:
+        users_by_username = User.get_users_by_username(session, "any_user")
+        assert users_by_username == []
+
+        users_by_ranks = User.get_users_by_ranks(session, [1, 2, 3])
+        assert users_by_ranks == []
