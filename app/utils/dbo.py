@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field, Session, create_engine, select, and_
 from typing import Optional
+import logging
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -76,6 +77,12 @@ class User(SQLModel, table=True):
 
 engine = create_engine("sqlite:///users.db")
 
-def init_db() -> None: 
-    SQLModel.metadata.create_all(engine)
-        
+def init_db(engine=engine) -> None: 
+    """Initialize the database"""
+    if engine is None:
+        raise ValueError("Database engine is not initialized.")
+    try:
+        SQLModel.metadata.create_all(engine)
+        logging.info("Database initialized successfully.")
+    except Exception as e:
+        logging.error(f"Error initializing database: {e}")

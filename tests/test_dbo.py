@@ -1,7 +1,29 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select
 from sqlalchemy import and_
-from app.utils.dbo import User
+from app.utils.dbo import User, init_db
+import logging
+
+# Capture logs during tests
+logging.basicConfig(level=logging.INFO)
+
+# init_db test group
+def test_init_db_success(caplog):
+    """Test that init_db initializes the database without errors."""
+    with caplog.at_level(logging.INFO):
+        init_db()
+        assert "Database initialized successfully." in caplog.text
+
+def test_init_db_invalid_connection(caplog):
+    """Test that init_db logs an error with an invalid connection string."""
+    invalid_engine = create_engine("sqlite:///invalid_path/users.db")
+    
+    with caplog.at_level(logging.ERROR):
+        try:
+            init_db(engine=invalid_engine)
+        except Exception:
+            pass
+        assert "Error initializing database:" in caplog.text
 
 @pytest.fixture
 def in_memory_db():
@@ -10,6 +32,7 @@ def in_memory_db():
     SQLModel.metadata.create_all(engine)
     yield engine
     engine.dispose()
+
 
 # create_user test group
 def test_create_user(in_memory_db):
