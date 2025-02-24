@@ -1,6 +1,6 @@
 from textual.screen import ModalScreen
 from textual.widgets import Static, Button
-from textual.containers import Vertical, Horizontal,Container
+from textual.containers import Horizontal,Container
 from textual.app import ComposeResult
 
 class ErrorScreen(ModalScreen):
