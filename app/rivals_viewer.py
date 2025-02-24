@@ -173,6 +173,7 @@ class RivalsSmurfTracker(App):
     def save_edit(self):
         selected_row = self.query_one(DataTable).cursor_row
         if selected_row is None:
+            self.push_screen(ErrorScreen("No user selected. Please choose a row before editing."))
             return
         else: 
            o_username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
@@ -185,6 +186,7 @@ class RivalsSmurfTracker(App):
         rank = self.query_one("#edit_rank", Select).value
         
         if not username or not password or rank is Select.BLANK:
+            self.push_screen(ErrorScreen("Username, password, and rank are required fields!"))
             return
 
         rank_value = RANK_MAP[rank]
@@ -195,7 +197,7 @@ class RivalsSmurfTracker(App):
                 user.update_user(session, username, password, uid, level, rank, rank_value)
                 print(f"Updated User: {user.username}")
             else:
-                print(f"Failed to find User: {o_username} ")
+                self.push_screen(ErrorScreen(f"Failed to find user: {o_username}. Please try again."))
 
         self.search_entries()
 
@@ -204,6 +206,7 @@ class RivalsSmurfTracker(App):
     def delete_entry(self):
         selected_row = self.query_one(DataTable).cursor_row
         if selected_row is None:
+            self.push_screen(ErrorScreen("No user selected. Please choose a row before editing."))
             return
         else:
             username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
@@ -214,10 +217,9 @@ class RivalsSmurfTracker(App):
             rank_value = RANK_MAP[rank]
 
             with Session(engine) as session:
-                if User.delete_user(session, username, password, uid, level, rank, rank_value):
-                    print(f"Deleted User: {username}")
-                else:
-                    print(f"Failed to delete User: {username}")
+                if not User.delete_user(session, username, password, uid, level, rank, rank_value):
+                    self.push_screen(ErrorScreen(f"Failed to delete user: {username}"))
+                    return
 
         self.search_entries()
         self.hide_edit()
