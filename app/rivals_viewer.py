@@ -55,7 +55,12 @@ class RivalsSmurfTracker(App):
     .edit {
         display: none;
     }
-    
+    #edit_buttons {
+        height: auto; 
+        min-height: 3; 
+        padding-bottom: 1; 
+    }
+
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
