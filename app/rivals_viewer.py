@@ -4,8 +4,8 @@ from textual.containers import Horizontal
 from textual.coordinate import Coordinate
 from utils.dbo import User, engine, init_db
 from utils.rank_utils import get_valid_ranks
+from utils.error_screen import ErrorScreen
 from sqlmodel import Session
-
 
 # Rank Mapping from highest to lowest
 RANKS = [
@@ -55,6 +55,7 @@ class RivalsSmurfTracker(App):
     .edit {
         display: none;
     }
+    
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
@@ -86,7 +87,6 @@ class RivalsSmurfTracker(App):
             yield Button("Delete", id="delete", classes="edit")
         
         yield Footer()
-
 
     def on_mount(self) -> None:
         self.query_one(DataTable).add_columns("Username", "Password", "uid", "Level", "Rank")
@@ -123,6 +123,7 @@ class RivalsSmurfTracker(App):
         self.query_one("#delete").display = True
         
     def store_entry(self):
+
         username = self.query_one("#username", Input).value.strip()
         password = self.query_one("#password", Input).value.strip()
         uid = self.query_one("#uid", Input).value.strip()
@@ -130,14 +131,14 @@ class RivalsSmurfTracker(App):
         rank = self.query_one("#rank", Select).value
 
         if not username or not password or rank is Select.BLANK:
+            self.push_screen(ErrorScreen("These fields are required!: username, password and rank"))
             return
     
         with Session(engine) as session:
             new_user = User.create_user(session, username=username, password=password, uid=uid, level=level, rank=rank, rank_value=RANK_MAP[rank])
             if new_user is None:
-                print(f"User already exist!: {username}")
-            else:
-                print(f"User Created: {new_user.username}")
+                self.push_screen(ErrorScreen(f"User account with the following uid already exists! : {uid}"))
+                return
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)
@@ -147,7 +148,6 @@ class RivalsSmurfTracker(App):
         password_input.value = ""
         uid_input.value = ""
         level_input.value = ""
-
 
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
