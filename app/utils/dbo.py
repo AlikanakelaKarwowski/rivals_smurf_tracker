@@ -6,8 +6,8 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(index=True)
     password: str
-    uid: str = Field(index=True, unique=True)
-    level: int
+    uid: Optional[str] = Field(index=True, unique=True, nullable=True)
+    level: Optional[int] = Field(default=None, nullable=True)
     rank: str
     rank_value: int
     
@@ -23,16 +23,16 @@ class User(SQLModel, table=True):
     @classmethod
     def create_user(cls, session: Session, username: str, password: str, uid: str, level: int, rank: str, rank_value: int) -> "User":
         """Create and save a new user."""
-        exist_user = cls.does_user_exists(session, username, uid)
-        if exist_user:
-            logging.error("A user with this username and uid already exists.")
+        uid = uid.strip() or None if uid else None
+        if uid and cls.does_user_exists(session, username, uid):  
+            logging.error("A user with this uid already exists")
             return None
         user = cls(username=username, password=password, uid=uid, level=level, rank=rank, rank_value=rank_value)
         session.add(user)
         session.commit()
         session.refresh(user)
         return user
-        
+    
     @classmethod
     def get_user_by_username(cls, session: Session, username: str, uid:str) -> Optional["User"]:
         """Retrieve a user by username and uid."""

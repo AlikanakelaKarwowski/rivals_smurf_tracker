@@ -37,18 +37,27 @@ def in_memory_db():
 def test_create_user(in_memory_db):
     """Test if User.create correctly inserts data into the in-memory database."""
     with Session(in_memory_db) as session:
-        User.create_user(session, "test_user", "test_pass", "test_uid", 1, "Eternal 1", 0)
-    
-        statement = select(User).where(User.username == "test_user")
-        user = session.exec(statement).first()
+                User.create_user(session, "test_user2", "test_pass2", None, 2, "Eternal 2", 1)
+                statement = select(User).where(User.username == "test_user2")
+                user = session.exec(statement).first()
+                assert user is not None
+                assert user.username == "test_user2"
+                assert user.password == "test_pass2"
+                assert user.uid == None
+                assert user.level == 2
+                assert user.rank == "Eternal 2"
+                assert user.rank_value == 1
 
-        assert user is not None
-        assert user.username == "test_user"
-        assert user.password == "test_pass"
-        assert user.uid == "test_uid"
-        assert user.level == 1
-        assert user.rank == "Eternal 1"
-        assert user.rank_value == 0
+                User.create_user(session, "test_user3", "test_pass3", None, None, "Eternal 3", 2)
+                statement = select(User).where(User.username == "test_user3")
+                user = session.exec(statement).first()
+                assert user is not None
+                assert user.username == "test_user3"
+                assert user.password == "test_pass3"
+                assert user.uid == None
+                assert user.level == None
+                assert user.rank == "Eternal 3"
+                assert user.rank_value == 2
 
 def test_create_duplicate_user(in_memory_db):
     """Test that creating a user with a duplicate username and uid is handled correctly."""
