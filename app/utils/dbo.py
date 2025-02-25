@@ -4,7 +4,7 @@ import logging
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    username: str = Field(index=True)
+    username: str = Field(index=True, unique=True)
     password: str
     uid: str | None = Field(index=True, unique=True, nullable=True)
     level: int | None = Field(default=None, nullable=True)
@@ -25,6 +25,11 @@ class User(SQLModel, table=True):
         """Create and save a new user."""
         if uid:
             uid = uid.strip()
+        
+        existing_user = session.exec(select(cls).where(cls.username == username)).first()
+        if existing_user:
+            logging.error("A user with this username already exists")
+            return None
         if uid and cls.does_user_exists(session, username, uid):  
             logging.error("A user with this uid already exists")
             return None
