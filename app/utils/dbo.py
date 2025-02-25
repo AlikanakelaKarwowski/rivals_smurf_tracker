@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Session, create_engine, select, and_
+from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_
 from typing import Optional
 import logging
 
@@ -16,23 +16,31 @@ class User(SQLModel, table=True):
         session.commit()
 
     @classmethod
-    def does_user_exists(cls, session: Session, username: str, uid: str) -> bool:
-        """Check if a user with the given username and uid exists."""
-        return session.exec(select(cls).where(cls.uid == uid)).first() is not None
-    
+    def does_user_exists(cls, session: Session, username: str = None, uid: str = None) -> bool:
+        """Check if a user with the given username or uid exists."""
+        if not username and not uid:
+            return False  
+
+        statement = select(cls).where(
+            or_(cls.username == username if username else False,
+                cls.uid == uid if uid else False)
+        )
+        return session.exec(statement).first() is not None
+
     @classmethod
     def create_user(cls, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None,) -> Optional["User"]:
         """Create and save a new user."""
         if uid:
             uid = uid.strip()
-        
-        existing_user = session.exec(select(cls).where(cls.username == username)).first()
-        if existing_user:
+            
+        if cls.does_user_exists(session, username=username):
             logging.error("A user with this username already exists")
             return None
-        if uid and cls.does_user_exists(session, username, uid):  
+
+        if uid and cls.does_user_exists(session, uid=uid):
             logging.error("A user with this uid already exists")
             return None
+
         user = cls(username=username, password=password, uid=uid, level=level, rank=rank, rank_value=rank_value)
         session.add(user)
         session.commit()
