@@ -132,7 +132,11 @@ class RivalsSmurfTracker(App):
         username = self.query_one("#username", Input).value.strip()
         password = self.query_one("#password", Input).value.strip()
         uid = self.query_one("#uid", Input).value.strip()
+        if uid == "":
+            uid = None
         level = self.query_one("#level", Input).value
+        if level == "":
+            level = None
         rank = self.query_one("#rank", Select).value
 
         if not username or not password or rank is Select.BLANK:
@@ -140,7 +144,7 @@ class RivalsSmurfTracker(App):
             return
     
         with Session(engine) as session:
-            new_user = User.create_user(session, username=username, password=password, uid=uid, level=level, rank=rank, rank_value=RANK_MAP[rank])
+            new_user = User.create_user(session, username, password, rank, RANK_MAP[rank], uid=uid, level=level,)
             if new_user is None:
                 self.push_screen(ErrorScreen(f"User account with the following uid already exists! : {uid}"))
                 return
@@ -187,7 +191,11 @@ class RivalsSmurfTracker(App):
         username = self.query_one("#edit_username", Input).value.strip()
         password = self.query_one("#edit_password", Input).value.strip()
         uid = self.query_one("#edit_uid", Input).value.strip()
+        if uid == "":
+            uid = None
         level = self.query_one("#edit_level", Input).value
+        if level == "":
+            level = None
         rank = self.query_one("#edit_rank", Select).value
         
         if not username or not password or rank is Select.BLANK:
@@ -199,7 +207,7 @@ class RivalsSmurfTracker(App):
         with Session(engine) as session:
             user = User.get_user_by_username(session, o_username, o_uid)
             if user:
-                user.update_user(session, username, password, uid, level, rank, rank_value)
+                user.update_user(session, username, password, rank, rank_value, uid=uid, level=level)
                 print(f"Updated User: {user.username}")
             else:
                 self.push_screen(ErrorScreen(f"Failed to find user: {o_username}. Please try again."))
@@ -217,12 +225,16 @@ class RivalsSmurfTracker(App):
             username = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 0))
             password = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 1))
             uid = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 2))
+            if uid == "":
+                uid = None
             level = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 3))
+            if level == "":
+                level = None
             rank = self.query_one(DataTable).get_cell_at(Coordinate(selected_row, 4))
             rank_value = RANK_MAP[rank]
 
             with Session(engine) as session:
-                if not User.delete_user(session, username, password, uid, level, rank, rank_value):
+                if not User.delete_user(session, username, password, rank, rank_value, uid=uid, level=level):
                     self.push_screen(ErrorScreen(f"Failed to delete user: {username}"))
                     return
 
