@@ -37,38 +37,84 @@ def in_memory_db():
 def test_create_user(in_memory_db):
     """Test if User.create correctly inserts data into the in-memory database."""
     with Session(in_memory_db) as session:
-                User.create_user(session, "test_user2", "test_pass2", None, 2, "Eternal 2", 1)
-                statement = select(User).where(User.username == "test_user2")
-                user = session.exec(statement).first()
-                assert user is not None
-                assert user.username == "test_user2"
-                assert user.password == "test_pass2"
-                assert user.uid == None
-                assert user.level == 2
-                assert user.rank == "Eternal 2"
-                assert user.rank_value == 1
+        # Test Normal create user
+        User.create_user(session, "test_user", "test_pass", "Eternal 1", 0, uid="test_uid", level=1)
+        statement = select(User).where(User.username == "test_user")
+        user = session.exec(statement).first()
 
-                User.create_user(session, "test_user3", "test_pass3", None, None, "Eternal 3", 2)
-                statement = select(User).where(User.username == "test_user3")
-                user = session.exec(statement).first()
-                assert user is not None
-                assert user.username == "test_user3"
-                assert user.password == "test_pass3"
-                assert user.uid == None
-                assert user.level == None
-                assert user.rank == "Eternal 3"
-                assert user.rank_value == 2
+        assert user is not None
+        assert user.username == "test_user"
+        assert user.password == "test_pass"
+        assert user.uid == "test_uid"
+        assert user.level == 1
+        assert user.rank == "Eternal 1"
+        assert user.rank_value == 0
 
+        # Test create user without uid
+        User.create_user(session, "test_user2", "test_pass2", "Eternal 2", 1, level=2)
+        statement = select(User).where(User.username == "test_user2")
+        user = session.exec(statement).first()
+
+        assert user is not None
+        assert user.username == "test_user2"
+        assert user.password == "test_pass2"
+        assert user.uid is None
+        assert user.level == 2
+        assert user.rank == "Eternal 2"
+        assert user.rank_value == 1
+
+        # Test create user without level
+        User.create_user(session, "test_user3", "test_pass3","Eternal 3", 2, uid="test_uid3")
+        statement = select(User).where(User.username == "test_user3")
+        user = session.exec(statement).first()
+
+        assert user is not None
+        assert user.username == "test_user3"
+        assert user.password == "test_pass3"
+        assert user.uid == "test_uid3"
+        assert user.level is None
+        assert user.rank == "Eternal 3"
+        assert user.rank_value == 2
+
+        # Test create user without uid/level
+        User.create_user(session, "test_user4", "test_pass4", "Eternal 3", 2)
+        statement = select(User).where(User.username == "test_user4")
+        user = session.exec(statement).first()
+
+        assert user is not None
+        assert user.username == "test_user4"
+        assert user.password == "test_pass4"
+        assert user.uid is None
+        assert user.level is None
+        assert user.rank == "Eternal 3"
+        assert user.rank_value == 2
+
+        # Test create user without uid/level/rank/rank_value
+        # Add error assertion for test case where username is None
+        with pytest.raises(TypeError):
+            User.create_user(session, "test_user5", "test_pass5")
+        
 def test_create_duplicate_user(in_memory_db):
     """Test that creating a user with a duplicate username and uid is handled correctly."""
     with Session(in_memory_db) as session:
 
-        user1 = User.create_user(session, "test_user", "test_pass", "test_uid", 1, "Eternal 1", 0)
+        user1 = User.create_user(session, "test_user", "test_pass", "Eternal 1", 0, uid="test_uid", level=1)
         assert user1 is not None 
 
         # Assert to create a duplicate user
-        user2 = User.create_user(session, "test_user", "test_pass2", "test_uid", 2, "Eternal 2", 1)
+        user2 = User.create_user(session, "test_user", "test_pass2",  "Eternal 2", 1, uid="test_uid", level=2)
         assert user2 is None  
+
+        # Assert that None is not considered unique if no value is passed in for uid
+        user3 = User.create_user(session, "test_user1", "test_pass3", "Eternal 3", 2)
+        assert user3 is not None
+
+        user4 = User.create_user(session, "test_user2", "test_pass3", "Eternal 4", 3)
+        assert user4 is not None
+
+        # Assert that username is unique
+        user5 = User.create_user(session, "test_user1", "test_pass4", "Eternal 5", 4)
+        assert user5 is None
 
         # Assert that only one user exists in the database
         users = session.exec(select(User).where(User.username == "test_user")).all()
@@ -80,7 +126,7 @@ def test_does_user_exists(in_memory_db):
     """Test if does_user_exists correctly identifies existing and non-existing users."""
     with Session(in_memory_db) as session:
        
-        User.create_user(session, "test_user", "test_pass", "test_uid", 1, "Eternal 1", 0)
+        User.create_user(session, "test_user", "test_pass", "Eternal 1", 0, uid="test_uid", level=1)
         
         # Assert if the user exists
         exists = User.does_user_exists(session, "test_user", "test_uid")
@@ -89,12 +135,13 @@ def test_does_user_exists(in_memory_db):
         # Assert if a non-existing user exists
         not_exists = User.does_user_exists(session, "non_existing_user", "non_existing_uid")
         assert not_exists is False  
+        
 
 def test_get_user_by_username(in_memory_db):
     """Test if User.get_user_by_username retrieves a single user correctly."""
     with Session(in_memory_db) as session:
-        created_user = User.create_user(session, "test_user", "test_pass", "test_uid", 25, "Gold 2", 7)
-
+        # Test with both username and uid
+        created_user = User.create_user(session, "test_user", "test_pass", "Gold 2", 7, uid="test_uid", level=1)
         user = User.get_user_by_username(session, "test_user", "test_uid")
 
         assert user is not None
@@ -105,22 +152,75 @@ def test_get_user_by_username(in_memory_db):
         assert user.rank == created_user.rank
         assert user.rank_value == created_user.rank_value
 
+        # Test with only username
+        created_user1 = User.create_user(session, "test_user1", "test_pass1", "Gold 2", 7, level=1)
+        user1 = User.get_user_by_username(session, "test_user1", uid=None)
+
+        assert user1 is not None
+        assert user1.username == created_user1.username
+        assert user1.password == created_user1.password
+        assert user1.uid is None
+        assert user1.level == created_user1.level
+        assert user1.rank == created_user1.rank
+        assert user1.rank_value == created_user1.rank_value
+
+        # Test without specifying uid
+        created_user2 = User.create_user(session, "test_user2", "test_pass2", "Gold 2", 7, level=1)
+        user2 = User.get_user_by_username(session, "test_user2")
+
+        assert user2 is not None
+        assert user2.username == created_user2.username
+        assert user2.password == created_user2.password
+        assert user2.uid is None
+        assert user2.level == created_user2.level
+        assert user2.rank == created_user2.rank
+        assert user2.rank_value == created_user2.rank_value
+
 def test_get_users_by_username(in_memory_db):
     """Test if User.get_users_by_username retrieves users by username."""
     with Session(in_memory_db) as session:
-        User.create_user(session, "test_user1", "pass1", "uid1", 10, "Gold 1", 5)
-        User.create_user(session, "test_user2", "pass2", "uid2", 20, "Silver 3", 3)
+        User.create_user(session, "test_user1", "pass1", "Gold 1", 5, uid="test_uid", level=1)
+        User.create_user(session, "test_user2", "pass2", "Silver 3", 3, uid="test_uid2", level=2)
     
         results = User.get_users_by_username(session, "test_user1")
         assert len(results) == 1
         assert results[0].username == "test_user1"
+        results2 = User.get_users_by_username(session, "test")
+        assert len(results2) == 2
+        assert results2[0].username == "test_user1"
+        assert results2[1].username == "test_user2"
+
+        User.create_user(session, "test_user3", "pass1", "Gold 1", 5)
+        User.create_user(session, "test_user4", "pass2", "Silver 3", 3)
+    
+        results3 = User.get_users_by_username(session, "test_user3")
+        assert len(results3) == 1
+        assert results3[0].username == "test_user3"
+        results4 = User.get_users_by_username(session, "test")
+        assert len(results4) == 4
+        assert results4[0].username == "test_user1"
+        assert results4[1].username == "test_user2"
+        assert results4[2].username == "test_user3"
+        assert results4[3].username == "test_user4"
+
+        results5 = User.get_users_by_username(session, "user")
+        assert len(results5) == 4
+        assert results5[0].username == "test_user1"
+        assert results5[1].username == "test_user2"
+        assert results5[2].username == "test_user3"
+        assert results5[3].username == "test_user4"
+
+        results6 = User.get_users_by_username(session, "user5")
+        assert len(results6) == 0
+
 
 def test_get_users_by_ranks(in_memory_db):
     """Test if User.get_users_by_ranks retrieves users by rank value."""
     with Session(in_memory_db) as session:
-        User.create_user(session, "test_user1", "pass1", "uid1", 15, "Gold 1", 10)
-        User.create_user(session, "test_user2", "pass2", "uid2", 18, "Gold 2", 11)
-        User.create_user(session, "test_user3", "pass3", "uid3", 25, "Platinum 1", 15)
+        User.create_user(session, "test_user1", "pass1", "Gold 1", 10, uid="test_uid", level=1)
+        User.create_user(session, "test_user2", "pass2", "Gold 2", 11, uid="test_uid2")
+        User.create_user(session, "test_user3", "pass3", "Platinum 1", 15, level=20)
+
     
         results = User.get_users_by_ranks(session, [10, 11])
         assert len(results) == 2
@@ -133,12 +233,12 @@ def test_get_users_by_ranks(in_memory_db):
 def test_update_user(in_memory_db):
     """Test if User.update_user correctly updates user information."""
     with Session(in_memory_db) as session:
-        user = User.create_user(session, "old_user", "old_pass", "old_uid", 30, "Bronze 1", 1)
+        user = User.create_user(session, "old_user", "old_pass", "Bronze 1", 1, uid="old_uid", level=10)
 
         user = session.exec(select(User).where(User.username == "old_user")).first()
         assert user is not None  # Assert user not None
 
-        user.update_user(session, "Chillbert", "Chi11", "new_uid", 40, "Silver 2", 5)
+        user.update_user(session, "Chillbert", "Chi11", "Silver 2", 5, uid="new_uid", level=40)
 
         updated_user = session.exec(select(User).where(User.uid == "new_uid")).first()
 
@@ -161,7 +261,6 @@ def test_update_non_existent_user(in_memory_db):
         user = session.exec(select(User).where(User.username == "non_exist_user")).first()
         assert user is None  
 
-        
         with pytest.raises(AttributeError):
             user.update_user(session, "new_user", "new_pass", "new_uid", 40, "Silver 2", 5)
 
@@ -169,9 +268,9 @@ def test_update_non_existent_user(in_memory_db):
 def test_delete_user(in_memory_db):
     """Test if User.delete_user correctly removes a user from database."""
     with Session(in_memory_db) as session:
-        User.create_user(session, "test_user", "del_pass", "del_uid", 50, "Diamond 3", 13)
+        User.create_user(session, "test_user", "del_pass", "Diamond 3", 13, uid="del_uid", level=50)
     
-        success = User.delete_user(session, "test_user", "del_pass", "del_uid", 50, "Diamond 3", 13)
+        success = User.delete_user(session, "test_user", "del_pass", "Diamond 3", 13, uid="del_uid", level=50)
         assert success is True
     
         statement = select(User).where(and_(User.username == "test_user", User.uid == "del_uid"))
@@ -181,7 +280,7 @@ def test_delete_user(in_memory_db):
 def test_delete_non_existent_user(in_memory_db):
     """Test that deleting a non-exist user fails gracefully."""
     with Session(in_memory_db) as session:
-        success = User.delete_user(session, "Im_not_real", "pass", "uid", 1, "Rank", 0)
+        success = User.delete_user(session, "Im_not_real", "pass", "Rank", 0, uid="uid", level=0)
         assert success is False 
 
 def test_empty_database_retrieval(in_memory_db):
