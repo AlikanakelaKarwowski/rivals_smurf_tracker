@@ -6,6 +6,7 @@ from utils.dbo import User, engine, init_db
 from utils.rank_utils import get_valid_ranks
 from utils.error_screen import ErrorScreen
 from sqlmodel import Session
+from utils.UserError import UserError
 
 # Rank Mapping from highest to lowest
 RANKS = [
@@ -140,14 +141,14 @@ class RivalsSmurfTracker(App):
         rank = self.query_one("#rank", Select).value
 
         if not username or not password or rank is Select.BLANK:
-            self.push_screen(ErrorScreen("These fields are required!: username, password and rank"))
+            self.push_screen(ErrorScreen("These fields are required: username, password and rank"))
             return
-    
-        with Session(engine) as session:
-            new_user = User.create_user(session, username, password, rank, RANK_MAP[rank], uid=uid, level=level,)
-            if new_user is None:
-                self.push_screen(ErrorScreen(f"User account with the following uid already exists! : {uid}"))
-                return
+        try:
+            with Session(engine) as session:
+                new_user = User.create_user(session, username, password, rank, RANK_MAP[rank], uid=uid, level=level,)
+        except UserError as e:
+            self.push_screen(ErrorScreen(e.message))
+            return
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)

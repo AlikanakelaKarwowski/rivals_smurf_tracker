@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_
 from typing import Optional
 import logging
+from utils.UserError import UserError
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -34,12 +35,10 @@ class User(SQLModel, table=True):
             uid = uid.strip()
             
         if cls.does_user_exists(session, username=username):
-            logging.error("A user with this username already exists")
-            return None
+            raise UserError("A user with this username already exists.")
 
         if uid and cls.does_user_exists(session, uid=uid):
-            logging.error("A user with this uid already exists")
-            return None
+            raise UserError("A user with this uid already exists.")
 
         user = cls(username=username, password=password, uid=uid, level=level, rank=rank, rank_value=rank_value)
         session.add(user)
