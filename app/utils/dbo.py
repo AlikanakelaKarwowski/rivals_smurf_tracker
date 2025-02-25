@@ -3,11 +3,11 @@ from typing import Optional
 import logging
 
 class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     username: str = Field(index=True)
     password: str
-    uid: Optional[str] = Field(index=True, unique=True, nullable=True)
-    level: Optional[int] = Field(default=None, nullable=True)
+    uid: str | None = Field(index=True, unique=True, nullable=True)
+    level: int | None = Field(default=None, nullable=True)
     rank: str
     rank_value: int
     
@@ -21,9 +21,10 @@ class User(SQLModel, table=True):
         return session.exec(select(cls).where(cls.uid == uid)).first() is not None
     
     @classmethod
-    def create_user(cls, session: Session, username: str, password: str, uid: str, level: int, rank: str, rank_value: int) -> "User":
+    def create_user(cls, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None,) -> Optional["User"]:
         """Create and save a new user."""
-        uid = uid.strip() or None if uid else None
+        if uid:
+            uid = uid.strip()
         if uid and cls.does_user_exists(session, username, uid):  
             logging.error("A user with this uid already exists")
             return None
@@ -34,7 +35,7 @@ class User(SQLModel, table=True):
         return user
     
     @classmethod
-    def get_user_by_username(cls, session: Session, username: str, uid:str) -> Optional["User"]:
+    def get_user_by_username(cls, session: Session, username: str, uid:str | None = None) -> Optional["User"]:
         """Retrieve a user by username and uid."""
         statement = select(cls).where(and_(cls.username == username, cls.uid == uid))
         return session.exec(statement).first()
@@ -51,10 +52,12 @@ class User(SQLModel, table=True):
         statement = select(cls).where(cls.rank_value.in_(search_query))
         return  session.exec(statement).all()
 
-    def update_user(self, session: Session, username: str, password: str, uid: str, level: int, rank: str, rank_value: int)  -> None:
+    def update_user(self, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None)  -> None:
         """Update user attributes."""
         self.username = username
         self.password = password
+        if uid:
+            uid = uid.strip()
         self.uid = uid
         self.level = level
         self.rank = rank
@@ -65,8 +68,10 @@ class User(SQLModel, table=True):
         session.refresh(self)
     
     @classmethod
-    def delete_user(cls, session: Session, username: str, password: str, uid: str, level: int, rank: str, rank_value: int) -> bool:
+    def delete_user(cls, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None,) -> bool:
         """Delete a user from the database by matching all attributes."""
+        if uid:
+            uid = uid.strip()
         statement = select(cls).where(
             cls.username == username,
             cls.password == password,
