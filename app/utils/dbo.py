@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_ , func
 from typing import Optional
 from utils.logger import logger
-from utils.UserError import UserError 
+from utils.UserError import UserError
 
 
 class User(SQLModel, table=True):
@@ -133,6 +133,7 @@ class User(SQLModel, table=True):
     def delete_user(cls, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None,) -> bool:
         """Delete a user from the database by matching all attributes."""
         try:
+
             if uid:
                 uid = uid.strip()
             statement = select(cls).where(
@@ -144,6 +145,7 @@ class User(SQLModel, table=True):
                 cls.rank_value == rank_value
             )
             user = session.exec(statement).first()
+            
             if not user:
                 return False 
             
@@ -155,7 +157,6 @@ class User(SQLModel, table=True):
             logger.error(f"Error deleting user in delete_user {username}: {e}")
             return False
             
-
 engine = create_engine("sqlite:///users.db")
 
 def init_db(engine=engine) -> None: 
