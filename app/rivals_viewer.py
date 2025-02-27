@@ -7,6 +7,7 @@ from utils.rank_utils import get_valid_ranks
 from utils.error_screen import ErrorScreen
 from sqlmodel import Session
 from utils.UserError import UserError
+import logging
 
 # Rank Mapping from highest to lowest
 RANKS = [
@@ -143,12 +144,17 @@ class RivalsSmurfTracker(App):
         if not username or not password or rank is Select.BLANK:
             self.push_screen(ErrorScreen("These fields are required: username, password and rank"))
             return
-        try:
-            with Session(engine) as session:
+        
+        with Session(engine) as session:
+            try:
                 new_user = User.create_user(session, username, password, rank, RANK_MAP[rank], uid=uid, level=level,)
-        except UserError as e:
-            self.push_screen(ErrorScreen(e.message))
-            return
+            except UserError as e:
+                self.push_screen(ErrorScreen(str(e))) 
+                return
+            except Exception as e:
+                logging.error(f"Unexpected error during user creation: {e}")
+                self.push_screen(ErrorScreen("Something went wrong. Please try again."))
+                return
 
         username_input = self.query_one("#username", Input)
         password_input = self.query_one("#password", Input)
@@ -162,12 +168,17 @@ class RivalsSmurfTracker(App):
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
         with Session(engine) as session:
+         try:
             if search_query in RANK_MAP:
                 rank_value = RANK_MAP[search_query]
                 valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
                 results = User.get_users_by_ranks(session, valid_ranks)
             else:
                 results = User.get_users_by_username(session, search_query)
+         except Exception as e:
+                logging.error(f"Error searching for users: {e}")
+                self.push_screen(ErrorScreen("An error occurred while searching. Try again."))
+                return
         
         table = self.query_one(DataTable)
         table.clear()
@@ -206,12 +217,16 @@ class RivalsSmurfTracker(App):
         rank_value = RANK_MAP[rank]
         
         with Session(engine) as session:
-            user = User.get_user_by_username(session, o_username, o_uid)
-            if user:
-                user.update_user(session, username, password, rank, rank_value, uid=uid, level=level)
-                print(f"Updated User: {user.username}")
-            else:
-                self.push_screen(ErrorScreen(f"Failed to find user: {o_username}. Please try again."))
+            try:
+                user = User.get_user_by_username(session, o_username, o_uid)
+                if user:
+                    user.update_user(session, username, password, rank, rank_value, uid=uid, level=level)
+                    print(f"Updated User: {user.username}")
+                else:
+                    self.push_screen(ErrorScreen(f"Failed to find user: {o_username}. Please try again."))
+            except Exception as e:
+                self.push_screen(ErrorScreen("Failed to update user. Please try again."))
+                return
 
         self.search_entries()
 
@@ -235,8 +250,13 @@ class RivalsSmurfTracker(App):
             rank_value = RANK_MAP[rank]
 
             with Session(engine) as session:
-                if not User.delete_user(session, username, password, rank, rank_value, uid=uid, level=level):
-                    self.push_screen(ErrorScreen(f"Failed to delete user: {username}"))
+                try:
+                    if not User.delete_user(session, username, password, rank, rank_value, uid=uid, level=level):
+                        self.push_screen(ErrorScreen(f"Failed to delete user: {username}"))
+                        return
+                except Exception as e:
+                    logging.error(f"Error deleting user {username}: {e}")
+                    self.push_screen(ErrorScreen("An error occurred while deleting. Try again."))
                     return
 
         self.search_entries()
