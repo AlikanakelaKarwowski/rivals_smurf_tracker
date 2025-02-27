@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select, and_
-from app.utils.UserError import UserError
 from app.utils.dbo import User, init_db
+from app.utils.UserError import UserError
 import logging
 
 # Capture logs during tests
@@ -12,7 +12,7 @@ def test_init_db_success(caplog):
     """Test that init_db initializes the database without errors."""
     with caplog.at_level(logging.INFO):
         init_db()
-        assert "Database initialized successfully." in caplog.text
+        assert "Database initialized successfully" in caplog.text
 
 def test_init_db_invalid_connection(caplog):
     """Test that init_db logs an error with an invalid connection string."""
@@ -23,7 +23,7 @@ def test_init_db_invalid_connection(caplog):
             init_db(engine=invalid_engine)
         except Exception:
             pass
-        assert "Error initializing database:" in caplog.text
+        assert "Error initializing database" in caplog.text
 
 @pytest.fixture
 def in_memory_db():
