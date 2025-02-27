@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select, and_
-from app.utils.dbo import User, init_db
-from app.utils.UserError import UserError
+from utils.dbo import User, init_db
+from utils.UserError import UserError
 import logging
 
 # Capture logs during tests
