@@ -1,8 +1,12 @@
 [project]
 name = "rivals-smurf-tracker"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.3.0"
+description = "TUI to keep track of Marvel Rival Alt Accounts"
+authors = ["Alex Karwowski <akk96.developer@gmail.com>", "Walter Hart Jr. <wally@walterhart.net>"]
 readme = "README.md"
+packages = [
+    { include = "rivals_smurf_tracker/app" },
+]
 requires-python = ">=3.12"
 dependencies = [
     "sqlmodel>=0.0.22",
