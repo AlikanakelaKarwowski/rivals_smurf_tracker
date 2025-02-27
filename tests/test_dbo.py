@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select, and_
-from utils.dbo import User, init_db, schema_migration, _table_exists
-from utils.UserError import UserError
+from app.utils.dbo import User, init_db, schema_migration, _table_exists
+from app.utils.UserError import UserError
 from sqlite3 import connect
 import logging
 
