@@ -126,6 +126,8 @@ class RivalsSmurfTracker(App):
         rank = self.query_one("#edit_rank")
         rank.display = True
 
+        self.query_one("#edit_rank").value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 4)) or Select.BLANK
+
         self.query_one("#save_edit").display = True
         self.query_one("#delete").display = True
         
