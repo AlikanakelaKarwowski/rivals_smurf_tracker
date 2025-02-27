@@ -2,9 +2,10 @@ from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_ 
 from typing import Optional
 from utils.logger import logger
 from utils.UserError import UserError
-
+import sqlite3
 
 class User(SQLModel, table=True):
+    __tablename__ = "usersv2"
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
     password: str
@@ -58,7 +59,7 @@ class User(SQLModel, table=True):
         except (UserError) as u_e:
             session.rollback()
             logger.warning(f"UserError in create_user: {u_e}")
-            raise 
+            raise u_e
         except (Exception) as e:
             session.rollback()
             logger.error(f"Unexpected error in create_user: {e}")
@@ -159,12 +160,44 @@ class User(SQLModel, table=True):
             
 engine = create_engine("sqlite:///users.db")
 
-def init_db(engine=engine) -> None: 
+
+def _table_exists(cursor: sqlite3.Cursor, table_name: str) -> bool:
+    """Check if specific table exists"""
+    cursor.execute(f"Select name from sqlite_master where type='table' and name='{table_name}'")
+    return cursor.fetchone() is not None
+
+def schema_migration(conn: sqlite3.Connection | None = None) -> None:
+    #connect to sqlite3 db
+    try:
+        if conn is None:
+            conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        #check if old users table exists
+        if _table_exists(cursor, "users"):
+            #insert old users into new usersv2 table
+            logger.info("Old users table exists. Inserting users into new table...")
+            cursor.execute("""
+                        INSERT INTO usersv2 (username, password, rank,rank_value)
+                        Select username, password, rank, rank_value from users
+                        """)
+            cursor.execute("DROP TABLE users;")
+            conn.commit()
+        else:
+            logger.info("Old users table does not exist.")
+    except Exception as e:
+        logger.error(f"Error in init_db: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+def init_db(engine=engine) -> None:         
     """Initialize the database"""
     if engine is None:
         raise ValueError("Database engine is not initialized.")
     try:
         SQLModel.metadata.create_all(engine)
+        schema_migration()
         logger.info("Database initialized successfully.")
     except Exception as e:
         logger.error(f"Error initializing database in init_db: {e}")
