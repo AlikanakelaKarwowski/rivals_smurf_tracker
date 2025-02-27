@@ -2,12 +2,12 @@ from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
 from textual.containers import Horizontal
 from textual.coordinate import Coordinate
-from app.utils.dbo import User, engine, init_db
-from app.utils.rank_utils import get_valid_ranks
-from app.utils.error_screen import ErrorScreen
+from utils.dbo import User, engine, init_db
+from utils.rank_utils import get_valid_ranks
+from utils.error_screen import ErrorScreen
 from sqlmodel import Session
-from app.utils.UserError import UserError
-from app.utils.logger import logger
+from utils.UserError import UserError
+from utils.logger import logger
 
 # Rank Mapping from highest to lowest
 RANKS = [
