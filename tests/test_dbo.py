@@ -1,7 +1,8 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine, select, and_
-from utils.dbo import User, init_db
+from utils.dbo import User, init_db, schema_migration, _table_exists
 from utils.UserError import UserError
+from sqlite3 import connect
 import logging
 
 # Capture logs during tests
@@ -13,6 +14,40 @@ def test_init_db_success(caplog):
     with caplog.at_level(logging.INFO):
         init_db()
         assert "Database initialized successfully" in caplog.text
+
+@pytest.fixture
+def db_connection():
+    conn = connect(":memory:")
+    yield conn
+    conn.close()
+
+def test_schema_migration(db_connection):
+    # Create a test table
+    cursor = db_connection.cursor()
+    cursor.execute("CREATE TABLE users (username TEXT, password TEXT, rank TEXT, rank_value INTEGER)")
+    cursor.execute("CREATE TABLE usersv2 (username TEXT, password TEXT, rank TEXT, rank_value INTEGER, uid TEXT, level INTEGER)")
+    db_connection.commit()
+
+    # Run schema migration
+    schema_migration(db_connection)
+    assert True
+
+def test_table_exists(db_connection):
+    # Create a test table
+    cursor = db_connection.cursor()
+    cursor.execute("CREATE TABLE users (username TEXT, password TEXT, rank TEXT, rank_value INTEGER)")
+    db_connection.commit()
+
+    # Check if the table exists
+    assert _table_exists(cursor, "users")
+
+    # Check if the table does not exist
+    assert not _table_exists(cursor, "usersv2")
+    
+    # Test that the function raises an exception when the connection is closed
+    db_connection.close()
+    with pytest.raises(Exception):
+        _table_exists(cursor, "usersv2")
 
 def test_init_db_invalid_connection(caplog):
     """Test that init_db logs an error with an invalid connection string."""
