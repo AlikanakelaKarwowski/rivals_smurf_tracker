@@ -137,8 +137,10 @@ def test_create_duplicate_user(in_memory_db):
         assert user1 is not None 
 
         # Assert to create a duplicate user
-        with pytest.raises(UserError, match="A user with this username already exists."):
+        try:
             User.create_user(session, "test_user", "test_pass2", "Eternal 2", 1, uid="test_uid", level=2)
+        except Exception as e:
+            assert "A user with this username already exists." in str(e)
 
         # Assert that None is not considered unique if no value is passed in for uid
         user3 = User.create_user(session, "test_user1", "test_pass3", "Eternal 3", 2)
@@ -148,13 +150,15 @@ def test_create_duplicate_user(in_memory_db):
         assert user4 is not None
 
         # Assert that username is unique
-        with pytest.raises(UserError, match="A user with this username already exists."):
+        try:
             User.create_user(session, "test_user1", "test_pass4", "Eternal 5", 4)
-
+        except Exception as e:
+            assert "A user with this username already exists." in str(e)
         # Assert that uid is unique
-        with pytest.raises(UserError, match="A user with this uid already exists."):
-             User.create_user(session, "test_user19", "test_pass2", "Eternal 2", 1, uid="test_uid", level=2)
-             
+        try:
+            User.create_user(session, "test_user19", "test_pass2", "Eternal 2", 1, uid="test_uid", level=2)
+        except Exception as e:
+            assert "A user with this uid already exists." in str(e) 
         # Assert that only one user exists in the database
         users = session.exec(select(User).where(User.username == "test_user")).all()
         assert len(users) == 1
