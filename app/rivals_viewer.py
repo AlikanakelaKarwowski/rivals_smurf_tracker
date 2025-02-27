@@ -165,6 +165,8 @@ class RivalsSmurfTracker(App):
         uid_input.value = ""
         level_input.value = ""
 
+        self.search_entries()
+
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
         with Session(engine) as session:
@@ -229,7 +231,7 @@ class RivalsSmurfTracker(App):
                 return
 
         self.search_entries()
-
+        
         self.hide_edit()
 
     def delete_entry(self):
