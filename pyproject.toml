@@ -2,11 +2,7 @@
 name = "rivals-smurf-tracker"
 version = "0.3.0"
 description = "TUI to keep track of Marvel Rival Alt Accounts"
-authors = ["Alex Karwowski <akk96.developer@gmail.com>", "Walter Hart Jr. <wally@walterhart.net>"]
 readme = "README.md"
-packages = [
-    { include = "rivals_smurf_tracker/app" },
-]
 requires-python = ">=3.12"
 dependencies = [
     "sqlmodel>=0.0.22",
@@ -15,6 +11,17 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "cx-freeze>=7.2.10",
     "pytest>=8.3.4",
     "textual-dev>=1.7.0",
 ]
+
+[tool.cxfreeze]
+executables = [
+    {script = "./app/rivals_viewer.py", base = "console"}]
+
+[tool.cxfreeze.build_exe]
+includes = ["app"]
+packages = ["sqlmodel", "sqlalchemy","textual", "textual._tree_sitter"]
+excludes = ["pytest", "cx_Freeze"]
+zip_include_packages = ["sqlmodel", "textual"]

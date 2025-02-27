@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_ , func
 from typing import Optional
-from utils.logger import logger
-from utils.UserError import UserError
+from app.utils.logger import logger
+from app.utils.UserError import UserError
 import sqlite3
 
 class User(SQLModel, table=True):
