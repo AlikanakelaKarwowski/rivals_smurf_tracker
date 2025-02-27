@@ -1,7 +1,8 @@
 from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_
 from typing import Optional
-import logging
-from utils.UserError import UserError
+from utils.logger import logger
+from utils.UserError import UserError 
+
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -29,7 +30,7 @@ class User(SQLModel, table=True):
             )
             return session.exec(statement).first() is not None
         except Exception as e:
-            logging.error(f"Error in does_user_exists: {e}")
+            logger.error(f"Error in does_user_exists: {e}")
             return False
 
     @classmethod
@@ -40,9 +41,11 @@ class User(SQLModel, table=True):
                 uid = uid.strip()
                 
             if cls.does_user_exists(session, username=username):
+                logger.warning(f"Attempted to create user in create_user, but username '{username}' already exists.") 
                 raise UserError("A user with this username already exists.")
 
             if uid and cls.does_user_exists(session, uid=uid):
+                logger.warning(f"Attempted to create user in create_user, but UID '{uid}' already exists.")
                 raise UserError("A user with this uid already exists.")
 
             user = cls(username=username, password=password, uid=uid, level=level, rank=rank, rank_value=rank_value)
@@ -52,11 +55,11 @@ class User(SQLModel, table=True):
             return user
         except (UserError) as u_e:
             session.rollback()
-            logging.error(f"UserError in create_user: {u_e}")
+            logger.warning(f"UserError in create_user: {u_e}")
             raise 
         except (Exception) as e:
             session.rollback()
-            logging.error(f"Unexpected error in create_user: {e}")
+            logger.error(f"Unexpected error in create_user: {e}")
             return None
 
     @classmethod
@@ -66,7 +69,7 @@ class User(SQLModel, table=True):
             statement = select(cls).where(and_(cls.username == username, cls.uid == uid))
             return session.exec(statement).first()
         except Exception as e:
-           logging.error(f"Error in get_user_by_username: {e}")
+           logger.error(f"Error in get_user_by_username: {e}")
            return None
     
     @classmethod
@@ -76,7 +79,7 @@ class User(SQLModel, table=True):
             statement = select(cls).where(cls.username.ilike(f"%{search_query}%"))
             return session.exec(statement).all()
         except Exception as e:
-            logging.error(f"Error in get_user_by_username: {e}")
+            logger.error(f"Error in get_users_by_username: {e}")
             return []
     
     @classmethod
@@ -86,16 +89,27 @@ class User(SQLModel, table=True):
             statement = select(cls).where(cls.rank_value.in_(search_query))
             return  session.exec(statement).all()
         except Exception as e:
-            logging.error(f"Error in get_users_by_ranks: {e}")
+            logger.error(f"Error in get_users_by_ranks: {e}")
             return []
 
     def update_user(self, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None)  -> None:
         """Update user attributes."""
         try:
+
+            if username != self.username and self.does_user_exists(session, username=username):
+                logger.warning(f"Attempted to update user in update_user, but username '{username}' already exists.")
+                raise UserError("A user with this username already exists.")
+            
+            if uid and uid != self.uid and self.does_user_exists(session, uid=uid):
+                logger.warning(f"Attempted to updat user in update_user, but UID '{uid}' already exists.")
+                raise UserError("A user with this UID already exists.")
+
             self.username = username
             self.password = password
+
             if uid:
                 uid = uid.strip()
+                
             self.uid = uid
             self.level = level
             self.rank = rank
@@ -104,10 +118,14 @@ class User(SQLModel, table=True):
             session.add(self)
             session.commit()
             session.refresh(self)
+        except UserError as u_e:
+            session.rollback()
+            logger.warning(f"UserError updating user {self.username}: {u_e}")
+            raise 
         except Exception as e:
             session.rollback()
-            logging.error(f"Error updating user {self.username}: {e}")
-            raise
+            logger.error(f"Error updating user {self.username}: {e}")
+            raise UserError("An unexpected error occurred while updating the user.")
     
     @classmethod
     def delete_user(cls, session: Session, username: str, password: str, rank: str, rank_value: int, uid: str | None = None, level: int | None = None,) -> bool:
@@ -132,7 +150,7 @@ class User(SQLModel, table=True):
             return True
         except Exception as e:
             session.rollback()
-            logging.error(f"Error deleting user {username}: {e}")
+            logger.error(f"Error deleting user in delete_user {username}: {e}")
             return False
             
 
@@ -144,6 +162,7 @@ def init_db(engine=engine) -> None:
         raise ValueError("Database engine is not initialized.")
     try:
         SQLModel.metadata.create_all(engine)
-        logging.info("Database initialized successfully.")
+        logger.info("Database initialized successfully.")
     except Exception as e:
-        logging.error(f"Error initializing database: {e}")
+        logger.error(f"Error initializing database in init_db: {e}")
+        raise RuntimeError("Failed to initialize the database.") from e
