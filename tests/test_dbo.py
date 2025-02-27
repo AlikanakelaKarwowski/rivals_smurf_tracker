@@ -1,6 +1,6 @@
 import pytest
-from sqlmodel import SQLModel, Session, create_engine, select
-from sqlalchemy import and_
+from sqlmodel import SQLModel, Session, create_engine, select, and_
+from app.utils.UserError import UserError
 from app.utils.dbo import User, init_db
 import logging
 
@@ -102,8 +102,8 @@ def test_create_duplicate_user(in_memory_db):
         assert user1 is not None 
 
         # Assert to create a duplicate user
-        user2 = User.create_user(session, "test_user", "test_pass2",  "Eternal 2", 1, uid="test_uid", level=2)
-        assert user2 is None  
+        with pytest.raises(UserError, match="A user with this username already exists."):
+            User.create_user(session, "test_user", "test_pass2", "Eternal 2", 1, uid="test_uid", level=2)
 
         # Assert that None is not considered unique if no value is passed in for uid
         user3 = User.create_user(session, "test_user1", "test_pass3", "Eternal 3", 2)
@@ -113,14 +113,27 @@ def test_create_duplicate_user(in_memory_db):
         assert user4 is not None
 
         # Assert that username is unique
-        user5 = User.create_user(session, "test_user1", "test_pass4", "Eternal 5", 4)
-        assert user5 is None
+        with pytest.raises(UserError, match="A user with this username already exists."):
+            User.create_user(session, "test_user1", "test_pass4", "Eternal 5", 4)
 
+        # Assert that uid is unique
+        with pytest.raises(UserError, match="A user with this uid already exists."):
+             User.create_user(session, "test_user19", "test_pass2", "Eternal 2", 1, uid="test_uid", level=2)
+             
         # Assert that only one user exists in the database
         users = session.exec(select(User).where(User.username == "test_user")).all()
         assert len(users) == 1
         assert users[0].username == "test_user"
         assert users[0].uid == "test_uid"
+
+def test_create_user_exception_handling(in_memory_db):
+    """Test that create_user handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        session.close()  
+
+        with pytest.raises(Exception):
+            result = User.create_user(session, "test_user1", "pass1", "Gold 1", 10, uid="test_uid", level=1)
+            assert result is None
 
 def test_does_user_exists(in_memory_db):
     """Test if does_user_exists correctly identifies existing and non-existing users."""
@@ -135,7 +148,7 @@ def test_does_user_exists(in_memory_db):
         # Assert if a non-existing user exists
         not_exists = User.does_user_exists(session, "non_existing_user", "non_existing_uid")
         assert not_exists is False  
-        
+      
 
 def test_get_user_by_username(in_memory_db):
     """Test if User.get_user_by_username retrieves a single user correctly."""
@@ -176,6 +189,16 @@ def test_get_user_by_username(in_memory_db):
         assert user2.rank == created_user2.rank
         assert user2.rank_value == created_user2.rank_value
 
+def test_get_user_by_username_exception_handling(in_memory_db):
+    """Test that get_user_by_username handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        User.create_user(session, "test_user1", "pass1", "Gold 1", 10, uid="test_uid", level=1)
+        session.close()  
+
+        with pytest.raises(Exception):
+            result = User.get_user_by_username(session, "test_user1", "test_uid")
+            assert result is None
+
 def test_get_users_by_username(in_memory_db):
     """Test if User.get_users_by_username retrieves users by username."""
     with Session(in_memory_db) as session:
@@ -213,6 +236,15 @@ def test_get_users_by_username(in_memory_db):
         results6 = User.get_users_by_username(session, "user5")
         assert len(results6) == 0
 
+def test_get_users_by_username_exception_handling(in_memory_db):
+    """Test that get_users_by_username handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        User.create_user(session, "test_user1", "pass1", "Gold 1", 10, uid="test_uid", level=1)
+        session.close()  
+
+        with pytest.raises(Exception):
+            results = User.get_users_by_username(session, "test_user1")
+            assert results == []
 
 def test_get_users_by_ranks(in_memory_db):
     """Test if User.get_users_by_ranks retrieves users by rank value."""
@@ -228,6 +260,16 @@ def test_get_users_by_ranks(in_memory_db):
         assert "test_user1" in usernames
         assert "test_user2" in usernames
         assert "test_user3" not in usernames
+
+def test_get_users_by_ranks_exception_handling(in_memory_db):
+    """Test that get_users_by_ranks handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        User.create_user(session, "test_user1", "pass1", "Gold 1", 10, uid="test_uid", level=1)
+        session.close()  
+
+        with pytest.raises(Exception):
+            results = User.get_users_by_ranks(session, [10, 11])
+            assert results == []
 
 # update_user test group
 def test_update_user(in_memory_db):
@@ -264,6 +306,15 @@ def test_update_non_existent_user(in_memory_db):
         with pytest.raises(AttributeError):
             user.update_user(session, "new_user", "new_pass", "new_uid", 40, "Silver 2", 5)
 
+def test_update_user_exception_handling(in_memory_db):
+    """Test that update_user handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        # Create a user to update
+        user = User.create_user(session, "test_user", "test_pass", "Gold 1", 10, uid="test_uid", level=1)
+
+        with pytest.raises(Exception):
+            user.update_user(session, None, "new_pass", "Silver 2", 5, uid="new_uid", level=40)
+
 # delete_user test group
 def test_delete_user(in_memory_db):
     """Test if User.delete_user correctly removes a user from database."""
@@ -282,6 +333,20 @@ def test_delete_non_existent_user(in_memory_db):
     with Session(in_memory_db) as session:
         success = User.delete_user(session, "Im_not_real", "pass", "Rank", 0, uid="uid", level=0)
         assert success is False 
+
+
+def test_delete_user_exception_handling(in_memory_db):
+    """Test that delete_user handles exceptions gracefully."""
+    with Session(in_memory_db) as session:
+        User.create_user(session, "test_user", "test_pass", "Gold 1", 10, uid="test_uid", level=1)
+
+        # Force an exception by closing the session before deletion
+        session.close()
+
+        with pytest.raises(Exception):
+            success = User.delete_user(session, "test_user", "test_pass", "Gold 1", 10, uid="test_uid", level=1)
+            assert success is False
+
 
 def test_empty_database_retrieval(in_memory_db):
     """Test that retrieving users from an empty database returns an empty list."""
