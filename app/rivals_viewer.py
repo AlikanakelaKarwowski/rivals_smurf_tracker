@@ -7,7 +7,7 @@ from utils.rank_utils import get_valid_ranks
 from utils.error_screen import ErrorScreen
 from sqlmodel import Session
 from utils.UserError import UserError
-import logging
+from utils.logger import logger
 
 # Rank Mapping from highest to lowest
 RANKS = [
@@ -154,7 +154,7 @@ class RivalsSmurfTracker(App):
                 self.push_screen(ErrorScreen(str(e))) 
                 return
             except Exception as e:
-                logging.error(f"Unexpected error during user creation: {e}")
+                logger.error(f"Unexpected error during user creation: {e}")
                 self.push_screen(ErrorScreen("Something went wrong. Please try again."))
                 return
 
@@ -180,7 +180,7 @@ class RivalsSmurfTracker(App):
             else:
                 results = User.get_users_by_username(session, search_query)
          except Exception as e:
-                logging.error(f"Error searching for users: {e}")
+                logger.error(f"Error searching for users: {e}")
                 self.push_screen(ErrorScreen("An error occurred while searching. Try again."))
                 return
         
@@ -229,6 +229,7 @@ class RivalsSmurfTracker(App):
                 else:
                     self.push_screen(ErrorScreen(f"Failed to find user: {o_username}. Please try again."))
             except Exception as e:
+                logger.error(f"Error updating user '{o_username}': {e}")
                 self.push_screen(ErrorScreen("Failed to update user. Please try again."))
                 return
 
@@ -259,7 +260,7 @@ class RivalsSmurfTracker(App):
                         self.push_screen(ErrorScreen(f"Failed to delete user: {username}"))
                         return
                 except Exception as e:
-                    logging.error(f"Error deleting user {username}: {e}")
+                    logger.error(f"Error deleting user {username}: {e}")
                     self.push_screen(ErrorScreen("An error occurred while deleting. Try again."))
                     return
 
