@@ -85,7 +85,7 @@ class RivalsSmurfTracker(App):
 
         yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
         yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
-        yield Input(placeholder="edit uid", id="edit_uid", classes="edit")
+        yield Input(placeholder="Edit uid", id="edit_uid", classes="edit")
         yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
 
         yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
@@ -118,11 +118,11 @@ class RivalsSmurfTracker(App):
         password.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1)))
         uid = self.query_one("#edit_uid")
         uid.display = True
-        uid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)))
+        uid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)) or "")
 
         level = self.query_one("#edit_level")
         level.display = True
-        level.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 3)))
+        level.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 3)) or "")
         rank = self.query_one("#edit_rank")
         rank.display = True
 
