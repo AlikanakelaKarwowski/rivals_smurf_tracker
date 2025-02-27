@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_
+from sqlmodel import SQLModel, Field, Session, create_engine, select, and_, or_ , func
 from typing import Optional
 from utils.logger import logger
 from utils.UserError import UserError 
@@ -25,8 +25,10 @@ class User(SQLModel, table=True):
         
         try:
             statement = select(cls).where(
-                or_(cls.username == username if username else False,
-                    cls.uid == uid if uid else False)
+                or_(
+                    func.lower(cls.username) == func.lower(username) if username else False,
+                    cls.uid == uid if uid else False
+                )
             )
             return session.exec(statement).first() is not None
         except Exception as e:
