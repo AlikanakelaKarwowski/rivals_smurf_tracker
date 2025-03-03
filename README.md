@@ -14,7 +14,7 @@ Uses python 3.12, textual, sqlmodel, andsqlite3 It runs completely in the termin
 
 # How to use
 
-There are 2 ways to use this program. If you are a programmer or at least know your way around python, you can use [uv](https://docs.astral.sh/uv/) to install all the dependancies and run the python file. Or if you just want an exe to run you can download the .exe file in releases.
+There are 2 ways to use this program. If you are a programmer or at least know your way around python, you can use [uv](https://docs.astral.sh/uv/) to install all the dependancies and run the python file. Or if you just want an exe to run you can download the zip file on the releases page,and extract everything to the folder where you want the application to live. You can also run the .msi file and pick where you want to install the application and let it do the installation for you.
 
 To get started with `uv` please install it [here](<[uv](https://docs.astral.sh/uv/getting-started/installation/)>)
 
@@ -29,10 +29,12 @@ This will setup the dependancies and a venv for the project.
 Then run
 
 ```bash
-uv run ./rivals_viewer.py
+uv run ./main.py
 ```
 
 in your terminal of choice (windows terminal, or alacritty recommended) and it will create a db file for you and start the TUI
+
+---
 
 You can also generate your own .exe file for portable use by installing ~~[pyinstaller](https://pyinstaller.org/en/stable/)~~ [cx_Freeze](https://cx-freeze.readthedocs.io/en/latest/) and running the following in your terminal once you have initialized the project with `uv sync`
 
@@ -52,11 +54,11 @@ This will create a `build`, folder and under that build folder is another folder
 
 ---
 
-If you don't care for setting it up, download the ~~.exe~~ zip file from the releases page. Make sure you extract all files and folders into the same folder. This zip was created using the same steps from above
+If you don't care for setting it up, download the ~~.exe~~ zip file from the releases page. Make sure you extract all files and folders into the same folder. This zip was created using the same steps as above.
 
 # Feedback and Help
 
-I just did this for a small group of friends who have smurfs to play with other friends in lower ranks. I literally wrote most of this in 2 hours initially and I'm sure theres issues, bugs, and better ways to do this. If you want to help make a PR and ill approve it if I think it helps.
+I just did this for a small group of friends who have smurfs to play with other friends in lower ranks. I'm sure theres issues, bugs, and better ways to do this. If you want to help make a PR and ill approve it if I think it helps.
 
 # FAQ
 
