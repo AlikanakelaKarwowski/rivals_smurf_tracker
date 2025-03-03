@@ -11,7 +11,7 @@ build_options = {'packages': packages, 'excludes': excludes, 'includes': include
 base = 'console'
 
 executables = [
-    Executable('./app/rivals_viewer.py', base=base, target_name = 'rivals_viewer')
+    Executable('./main.py', base=base, target_name = 'rivals_viewer')
 ]
 
 setup(name='rivals_viewer',
