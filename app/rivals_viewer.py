@@ -286,7 +286,7 @@ class RivalsSmurfTracker(App):
         self.query_one("#save_edit").display = False
         self.query_one("#delete").display = False
 
-if __name__ == "__main__":
+def main_run() -> None:
     try:
         init_db()
     except Exception as e:
