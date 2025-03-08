@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical, Container, HorizontalGroup
 from textual.coordinate import Coordinate
 from utils.dbo import User, engine, init_db
 from utils.rank_utils import get_valid_ranks
@@ -25,6 +25,7 @@ RANK_MAP = {rank: i for i, rank in enumerate(reversed(RANKS))}
 
 
 class RivalsSmurfTracker(App):
+
     CSS = """
     #submit {
         background: green;
@@ -34,69 +35,120 @@ class RivalsSmurfTracker(App):
         background: blue;
         color: white;
     }
-    #edit_prompt {
-        display: none;
-    }
-    #edit_username {
-        display: none;
-    }
-    #edit_password {
-        display: none;
-    }
-    #edit_rank {
-        display: none;
-    }
-    #save_edit {
-        display: none;
-        background: green;
-    }
-    #delete {
-        display: none;
-        background: maroon;
-    }
+    #edit_prompt,
+    #edit_username,
+    #edit_password,
+    #edit_rank,
+    #save_edit,
+    #delete,
     .edit {
         display: none;
     }
+
+    #save_edit {
+        background: green;
+    }
+
+    #delete {
+        background: maroon;
+    }
+
     #edit_buttons {
         height: auto; 
         min-height: 3; 
         padding-bottom: 1; 
+    }
+    .container {
+        layout: grid;
+        grid-size: 3;
+        grid-columns: 3fr 3fr 3fr;
+        grid-rows: auto auto auto;
+        grid-gutter: 2 2;
+        padding: 2;
+        content-align: center middle;
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+    }
+    .span--two {
+        column-span: 2;
+    }
+    .span--three {
+        column-span: 3;
+    }
+    Select{
+        min-width: 40;
+        width:90%;
+    }
+    .container > *{
+     width:100%;
+     
+    }
+    .button--container{
+        align: center middle;
+    }
+    .button--container> *{
+        width:100%;
+    }
+    .buttons{
+        width:15%;
+        height:auto;
+    }
+    .margin--two{
+        margin-left:2
     }
 
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
     def compose(self) -> ComposeResult:
+
         yield Header()
-        yield Input(placeholder="Enter your username", id="username", classes="userpass")
-        yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
-        yield Input(placeholder ="Enter your UID", id="uid", classes="userpass")
-        yield Input(placeholder="Enter your level", id="level", classes="userpass")
 
-        yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
-        yield Button("Submit", id="submit", classes="selection")
+        with Container(classes="container"):
+            # create user content
+            
+            #ROW1
+            yield Input(placeholder="Enter your username", id="username", classes="userpass")
+            yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
+            yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
 
-        yield Input(placeholder="Search by username or rank", id="search", classes="search")
-        yield Button("Search", id="search_btn", classes="search")
+            #ROW2
+            yield Input(placeholder ="Enter your UID", id="uid", classes="userpass")
+            yield Input(placeholder="Enter your level", id="level", classes="userpass ")
+            yield Static()
+           
+        
+            #ROW3
+            yield Input(placeholder="Search by username or rank", id="search", classes="search span--two")
+            yield Static()
 
+            with Horizontal(classes="span--three button--container"):
+                yield Button("Search", id="search_btn", classes="search buttons")
+                yield Button("Submit", id="submit", classes="selection buttons margin--two")
 
-        yield DataTable(id="results", cursor_type="row", classes="results")
-        yield Static("Click an entry to edit", id="edit_prompt", classes="results")
+            # Search content
+            yield DataTable(id="results", cursor_type="row", classes="results span--three")
+            yield Static("Click an entry to edit", id="edit_prompt", classes="results span--three")
 
-        yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
-        yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
-        yield Input(placeholder="Edit uid", id="edit_uid", classes="edit")
-        yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
+            # row 1
+            yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
+            yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
+            yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
 
-        yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
-        with Horizontal(id="edit_buttons"):
-            yield Button("Save Changes", id="save_edit", classes="edit")
-            yield Button("Delete", id="delete", classes="edit")
+            #row 2
+            yield Input(placeholder="Edit uid", id="edit_uid", classes="edit")
+            yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
+            yield Static()
+            
+            with Horizontal(classes="span--three button--container"):
+                yield Button("Save Changes", id="save_edit", classes="edit buttons")
+                yield Button("Delete", id="delete", classes="edit buttons margin--two")
         
         yield Footer()
 
     def on_mount(self) -> None:
-        self.query_one(DataTable).add_columns("Username", "Password", "uid", "Level", "Rank")
+        self.query_one(DataTable).add_columns("Username", "Password", "UID", "Level", "Rank")
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit":
