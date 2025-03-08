@@ -22,19 +22,35 @@ RANKS = [
 RANK_MAP = {rank: i for i, rank in enumerate(reversed(RANKS))}
 
 # Database setup
-
-
 class RivalsSmurfTracker(App):
 
     CSS = """
-    #submit {
-        background: green;
-        color: white;
+    .container {
+        layout: grid;
+        grid-size: 3;
+        grid-columns: 3fr 3fr 3fr;
+        grid-rows: auto auto auto;
+        grid-gutter: 2 2;
+        padding: 2;
+        content-align: center middle;
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
     }
-    #search_btn {
-        background: blue;
-        color: white;
+    .col-span-2{
+        column-span: 2;
     }
+    .col-span-3{
+        column-span: 3;
+    }
+    Select{
+        min-width: 40;
+        width:90%;
+    }
+    .container > *{
+        width:100%;
+    }
+    
     #edit_prompt,
     #edit_username,
     #edit_password,
@@ -58,31 +74,13 @@ class RivalsSmurfTracker(App):
         min-height: 3; 
         padding-bottom: 1; 
     }
-    .container {
-        layout: grid;
-        grid-size: 3;
-        grid-columns: 3fr 3fr 3fr;
-        grid-rows: auto auto auto;
-        grid-gutter: 2 2;
-        padding: 2;
-        content-align: center middle;
-        width: 100vw;
-        height: 100vh;
-        max-width: 100vw;
+    #submit {
+        background: green;
+        color: white;
     }
-    .span--two {
-        column-span: 2;
-    }
-    .span--three {
-        column-span: 3;
-    }
-    Select{
-        min-width: 40;
-        width:90%;
-    }
-    .container > *{
-     width:100%;
-     
+    #search_btn {
+        background: blue;
+        color: white;
     }
     .button--container{
         align: center middle;
@@ -94,10 +92,10 @@ class RivalsSmurfTracker(App):
         width:15%;
         height:auto;
     }
-    .margin--two{
+    .ml-2{
         margin-left:2
     }
-
+  
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
@@ -109,27 +107,27 @@ class RivalsSmurfTracker(App):
             # create user content
             
             #ROW1
-            yield Input(placeholder="Enter your username", id="username", classes="userpass")
+            yield Input(placeholder="Enter your username", id="username", classes="username")
             yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
             yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
 
             #ROW2
-            yield Input(placeholder ="Enter your UID", id="uid", classes="userpass")
-            yield Input(placeholder="Enter your level", id="level", classes="userpass ")
+            yield Input(placeholder ="Enter your UID", id="uid", classes="useruid")
+            yield Input(placeholder="Enter your level", id="level", classes="userlevel")
             yield Static()
            
         
             #ROW3
-            yield Input(placeholder="Search by username or rank", id="search", classes="search span--two")
+            yield Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
             yield Static()
 
-            with Horizontal(classes="span--three button--container"):
+            with Horizontal(classes="col-span-3 button--container"):
                 yield Button("Search", id="search_btn", classes="search buttons")
-                yield Button("Submit", id="submit", classes="selection buttons margin--two")
+                yield Button("Submit", id="submit", classes="selection buttons ml-2")
 
             # Search content
-            yield DataTable(id="results", cursor_type="row", classes="results span--three")
-            yield Static("Click an entry to edit", id="edit_prompt", classes="results span--three")
+            yield DataTable(id="results", cursor_type="row", classes="results col-span-3")
+            yield Static("Click an entry to edit", id="edit_prompt", classes="results col-span-3")
 
             # row 1
             yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
@@ -141,9 +139,9 @@ class RivalsSmurfTracker(App):
             yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
             yield Static()
             
-            with Horizontal(classes="span--three button--container"):
+            with Horizontal(classes="col-span-3 button--container"):
                 yield Button("Save Changes", id="save_edit", classes="edit buttons")
-                yield Button("Delete", id="delete", classes="edit buttons margin--two")
+                yield Button("Delete", id="delete", classes="edit buttons ml-2")
         
         yield Footer()
 
