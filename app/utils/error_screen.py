@@ -10,31 +10,33 @@ class ErrorScreen(ModalScreen):
     ErrorScreen {
         align: center middle; 
     }
-
     #error_container {
-        width: 50%;
-        max-height: 30%;
-        height: 20;
+        layout: grid;
+        grid-size: 2;
+        grid-columns: 1fr 1fr ;
+        grid-rows: auto auto;
+        padding: 2;
+        width: 100%;
+        height: auto;
+        min-width: 60vw;
+        max-width: 80;
+        max-height: 15;
         background: $surface;
         border: thick $background 80%;
-        padding: 2;
-        align: center middle;
+        content-align:center middle;
     }
-
     #error_message {
         text-align: center;
         color: $text;
         padding: 1;
+        column-span: 2;
     }
-
     #error_buttons {
+        column-span: 2; 
         align: center middle;
     }
-
     #close_button {
-        margin-top: 1;
-        width: 30%;
-        align: center middle;
+        width: 50%;
     }
     """
 
@@ -45,8 +47,9 @@ class ErrorScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         with Container(id="error_container"):
             yield Static(self.message, id="error_message")
-            with Horizontal(id="error_buttons"): 
+            with Container(id="error_buttons"):  
                 yield Button("Close", id="close_button", variant="error")
+
 
 
     def on_button_pressed(self, event) -> None:
