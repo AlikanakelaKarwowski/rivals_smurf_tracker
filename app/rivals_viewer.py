@@ -28,7 +28,7 @@ class RivalsSmurfTracker(App):
     .container {
         layout: grid;
         grid-size: 3;
-        grid-columns: 3fr 3fr 3fr;
+        grid-columns: 1fr 1fr 1fr;
         grid-rows: auto auto auto;
         grid-gutter: 2 2;
         padding: 2;
@@ -43,10 +43,6 @@ class RivalsSmurfTracker(App):
     .col-span-3{
         column-span: 3;
     }
-    Select{
-        min-width: 40;
-        width:90%;
-    }
     .container > *{
         width:100%;
     }
@@ -60,13 +56,9 @@ class RivalsSmurfTracker(App):
     .edit {
         display: none;
     }
-
-    #save_edit {
-        background: green;
-    }
-
     #delete {
         background: maroon;
+        outline: wide maroon;
     }
 
     #edit_buttons {
@@ -74,28 +66,33 @@ class RivalsSmurfTracker(App):
         min-height: 3; 
         padding-bottom: 1; 
     }
-    #submit {
+    #submit, #save_edit{
         background: green;
-        color: white;
+        outline: wide green ; 
     }
     #search_btn {
         background: blue;
-        color: white;
+        outline: wide blue;
     }
     .button--container{
         align: center middle;
     }
-    .button--container> *{
-        width:100%;
-    }
     .buttons{
-        width:15%;
+        width:16%;
         height:auto;
     }
     .ml-2{
         margin-left:2
     }
-  
+    Button{ 
+        content-align: center middle;
+        height: auto;
+        padding: 1 0;
+        min-height: 3; 
+        color: white;
+        text-style:bold;
+    }
+
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
