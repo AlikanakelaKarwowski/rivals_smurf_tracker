@@ -143,7 +143,15 @@ class RivalsSmurfTracker(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.query_one(DataTable).add_columns("Username", "Password", "UID", "Level", "Rank")
+        table = self.query_one(DataTable)
+        table.add_column("Username", width=20)
+        table.add_column("Password", width=15)
+        table.add_column("UID", width=15)
+        table.add_column("Level", width=10)
+        table.add_column("Rank", width=20)
+
+
+        
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit":
