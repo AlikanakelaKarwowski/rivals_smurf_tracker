@@ -34,12 +34,17 @@ class ErrorScreen(ModalScreen):
     #error_buttons {
         column-span: 2; 
         align: center middle;
+        height: auto;
     }
     #close_button {
         width: 50%;
+        padding:1 0;  
+        height: auto;
+        color:white;
+        background: maroon;
+        outline: wide maroon;
     }
     """
-
     def __init__(self, message: str):
         super().__init__()
         self.message = message
@@ -48,9 +53,7 @@ class ErrorScreen(ModalScreen):
         with Container(id="error_container"):
             yield Static(self.message, id="error_message")
             with Container(id="error_buttons"):  
-                yield Button("Close", id="close_button", variant="error")
-
-
+                yield Button("Close", id="close_button")
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "close_button":
