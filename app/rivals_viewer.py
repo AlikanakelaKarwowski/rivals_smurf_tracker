@@ -54,17 +54,12 @@ class RivalsSmurfTracker(App):
     .edit {
         display: none;
     }
-    #delete {
-        background: maroon;
-        outline: wide maroon;
-    }
     Button{ 
         height: auto;
         padding: 1 0;
         min-height: 3; 
         color: white;
         text-style:bold;
-       
         min-width: 10;
     }
     Button:hover, 
@@ -84,6 +79,10 @@ class RivalsSmurfTracker(App):
         background: #004225;
         outline: wide #004225; 
     }
+    #delete {
+        background: maroon;
+        outline: wide maroon;
+    }
     .buttons{
         width:50%;
         height:auto;
@@ -99,7 +98,7 @@ class RivalsSmurfTracker(App):
         color: white;
     }
     Input:hover,  Select:hover > SelectCurrent, Select:focus > SelectCurrent , Input:focus{
-        border:wide  #0178D4;
+        border: wide  #0178D4;
     }
      Select > SelectCurrent {
         border: wide white;
@@ -107,8 +106,11 @@ class RivalsSmurfTracker(App):
         width: 100%;
         height: auto;
      }
-    .datatable{
-        height: auto;
+    .datatable {
+        width: 100%;
+        height: 50vh;
+        min-height: 10vh; 
+        overflow: auto;
     }
     #edit_user_prompt{
         padding: 2 0;
@@ -129,7 +131,6 @@ class RivalsSmurfTracker(App):
         with Container(classes="container"):
             
             # Create user content
-
             yield Static("Fill in the details below to create a new user entry. Username, password, and rank are required fields. You can also search for existing users using the search box.", id="create_user_prompt", classes="col-span-3")
 
             username_input = Input(placeholder="Enter your username", id="username", classes="username-border")
@@ -211,11 +212,11 @@ class RivalsSmurfTracker(App):
         edit_rank_current.border_title = "Edit Rank"
 
         table = self.query_one(DataTable)
-        table.add_column("Username", width=20)
-        table.add_column("Password", width=15)
-        table.add_column("UID", width=15)
-        table.add_column("Level", width=10)
-        table.add_column("Rank", width=20)
+        table.add_column("Username")
+        table.add_column("Password")
+        table.add_column("UID")
+        table.add_column("Level")
+        table.add_column("Rank")
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit_btn":
