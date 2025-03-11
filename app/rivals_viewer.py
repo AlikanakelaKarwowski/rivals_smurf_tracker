@@ -66,11 +66,13 @@ class RivalsSmurfTracker(App):
     #submit_btn, #save_edit{
         background: darkgreen;
         outline: wide darkgreen; 
+        align: center middle;
     }
+
     #submit_btn, #search_btn{
-      width:100%; 
-      align: center middle;
+        width:100%; 
     }
+
     #search_btn {
         background: mediumblue;
         outline: wide mediumblue;
@@ -99,22 +101,21 @@ class RivalsSmurfTracker(App):
         text-align: center;
         color: white;
     }
-
+    Input:hover, SelectCurrent:hover,SelectCurrent:hover, Input:focus{
+        border:wide  #0178D4;
+    }
      Select > SelectCurrent {
         border: wide white;
         padding: 1 0;
         width: 100%;
         height: auto;
      }
-    Inout
     .datatable{
         height: auto;
     }
-    
     #edit_user_prompt{
         padding: 2 0;
     }
-    
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
