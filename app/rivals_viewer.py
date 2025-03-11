@@ -58,24 +58,30 @@ class RivalsSmurfTracker(App):
         background: maroon;
         outline: wide maroon;
     }
+    Button{ 
+        height: auto;
+        padding: 1 0;
+        min-height: 3; 
+        color: white;
+        text-style:bold;
+        width:100%; 
+    }
+    Button:hover, 
+    Button:focus {
+        outline: wide #0178D4 !important;
+    }
     #edit_buttons {
         height: auto; 
         min-height: 3; 
         padding-bottom: 1; 
     }
+     #search_btn {
+        background: darkblue;
+        outline: wide darkblue;
+    }
     #submit_btn, #save_edit{
         background: darkgreen;
         outline: wide darkgreen; 
-        align: center middle;
-    }
-
-    #submit_btn, #search_btn{
-        width:100%; 
-    }
-
-    #search_btn {
-        background: mediumblue;
-        outline: wide mediumblue;
     }
     .button--container{
         align: center middle;
@@ -86,13 +92,6 @@ class RivalsSmurfTracker(App):
     }
     .ml-2{
         margin-left:2
-    }
-    Button{ 
-        height: auto;
-        padding: 1 0;
-        min-height: 3; 
-        color: white;
-        text-style:bold;
     }
     Input{
         border: wide white;
@@ -149,14 +148,14 @@ class RivalsSmurfTracker(App):
             user_level.border_title = "Level"
             yield user_level
             with Container(classes="button--container"):
-                yield Button("Search", id="search_btn", classes="search")
+                yield Button("Search", id="search_btn", classes="search button-effect")
            
             search_input = Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
             search_input.border_title = "Search"
             yield search_input
 
         
-            yield Button("Submit", id="submit_btn", classes="submit")
+            yield Button("Submit", id="submit_btn", classes="submit button-effect")
 
             # Search content
             yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
@@ -190,8 +189,8 @@ class RivalsSmurfTracker(App):
             yield Static()
 
             with Horizontal(classes="button--container"):
-                yield Button("Save Changes", id="save_edit", classes="edit buttons")
-                yield Button("Delete", id="delete", classes="edit buttons ml-2")
+                yield Button("Save Changes", id="save_edit", classes="edit buttons button-effect")
+                yield Button("Delete", id="delete", classes="edit buttons button-effect ml-2")
 
             yield Static()
         
