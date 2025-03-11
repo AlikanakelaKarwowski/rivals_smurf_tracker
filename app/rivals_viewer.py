@@ -23,19 +23,18 @@ RANK_MAP = {rank: i for i, rank in enumerate(reversed(RANKS))}
 
 # Database setup
 class RivalsSmurfTracker(App):
-
+    
     CSS = """
     .container {
         layout: grid;
         grid-size: 3;
-        grid-columns: 1fr 1fr 1fr;
-        grid-rows: auto auto auto;
-        grid-gutter: 2 2;
-        padding: 2;
+        grid-columns: 1fr 1fr 0.5fr;
+        grid-rows: auto;
+        grid-gutter: 0 2;
+        padding: 2 3;
         content-align: center middle;
         width: 100vw;
-        height: 100vh;
-        max-width: 100vw;
+        overflow: auto;
     }
     .col-span-2{
         column-span: 2;
@@ -46,7 +45,6 @@ class RivalsSmurfTracker(App):
     .container > *{
         width:100%;
     }
-    
     #edit_prompt,
     #edit_username,
     #edit_password,
@@ -60,39 +58,63 @@ class RivalsSmurfTracker(App):
         background: maroon;
         outline: wide maroon;
     }
-
     #edit_buttons {
         height: auto; 
         min-height: 3; 
         padding-bottom: 1; 
     }
-    #submit, #save_edit{
-        background: green;
-        outline: wide green ; 
+    #submit_btn, #save_edit{
+        background: darkgreen;
+        outline: wide darkgreen; 
+    }
+    #submit_btn, #search_btn{
+      width:100%; 
+      align: center middle;
     }
     #search_btn {
-        background: blue;
-        outline: wide blue;
+        background: mediumblue;
+        outline: wide mediumblue;
     }
     .button--container{
         align: center middle;
     }
     .buttons{
-        width:16%;
+        width:50%;
         height:auto;
     }
     .ml-2{
         margin-left:2
     }
     Button{ 
-        content-align: center middle;
         height: auto;
         padding: 1 0;
         min-height: 3; 
         color: white;
         text-style:bold;
     }
+    Input{
+        border: wide white;
+        padding: 1 0;
+        height: auto;
+        text-align: center;
+        color: white;
+    }
 
+     Select > SelectCurrent {
+        border: wide white;
+        padding: 1 0;
+        width: 100%;
+        height: auto;
+     }
+    Inout
+    .datatable{
+        height: auto;
+    }
+    
+    #edit_user_prompt{
+        padding: 2 0;
+    }
+    
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
@@ -101,48 +123,89 @@ class RivalsSmurfTracker(App):
         yield Header()
 
         with Container(classes="container"):
-            # create user content
             
-            #ROW1
-            yield Input(placeholder="Enter your username", id="username", classes="username")
-            yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
-            yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
+            # Create user content
 
-            #ROW2
-            yield Input(placeholder ="Enter your UID", id="uid", classes="useruid")
-            yield Input(placeholder="Enter your level", id="level", classes="userlevel")
-            yield Static()
+            yield Static("Fill in the details below to create a new user entry. Username, password, and rank are required fields. You can also search for existing users using the search box.", id="create_user_prompt", classes="col-span-3")
+
+            username_input = Input(placeholder="Enter your username", id="username", classes="username-border")
+            username_input.border_title = "Username"
+            yield username_input
            
-        
-            #ROW3
-            yield Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
-            yield Static()
+            user_password = Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
+            user_password.border_title ="Password"
+            yield  user_password
 
-            with Horizontal(classes="col-span-3 button--container"):
-                yield Button("Search", id="search_btn", classes="search buttons")
-                yield Button("Submit", id="submit", classes="selection buttons ml-2")
+            userrank_selection = Select([(rank, rank) for rank in RANKS], prompt="Select ", id="rank", classes="selection")
+            userrank_selection.border_title="Rank"
+            yield userrank_selection
+
+            user_uid = Input(placeholder ="Enter your UID", id="uid", classes="useruid")
+            user_uid.border_title="UID"
+            yield  user_uid
+
+            user_level = Input(placeholder="Enter your level", id="level", classes="userlevel")
+            user_level.border_title = "Level"
+            yield user_level
+            with Container(classes="button--container"):
+                yield Button("Search", id="search_btn", classes="search")
+           
+            search_input = Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
+            search_input.border_title = "Search"
+            yield search_input
+
+        
+            yield Button("Submit", id="submit_btn", classes="submit")
 
             # Search content
-            yield DataTable(id="results", cursor_type="row", classes="results col-span-3")
-            yield Static("Click an entry to edit", id="edit_prompt", classes="results col-span-3")
+            yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
 
-            # row 1
-            yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
-            yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
-            yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
+            yield DataTable(id="results", cursor_type="row", classes="datatable col-span-3")
 
-            #row 2
-            yield Input(placeholder="Edit uid", id="edit_uid", classes="edit")
-            yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
+        
+            edit_username = Input(placeholder="Edit Username", id="edit_username", classes="edit")
+            edit_username.border_title = "Edit Username"
+            yield edit_username
+
+            edit_password = Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
+            edit_password.border_title = "Edit Password"
+            yield edit_password
+
+            edit_rank = Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
+            edit_rank.border_title = "Edit Rank"
+            yield edit_rank  
+
+        
+            edit_uid = Input(placeholder="Edit UID", id="edit_uid", classes="edit")
+            edit_uid.border_title = "Edit UID"
+            yield edit_uid
+
+            edit_level = Input(placeholder="Edit Level", id="edit_level", classes="edit")
+            edit_level.border_title = "Edit Level"
+            yield edit_level
+
+            yield Static() #Empty grid cell 
+
             yield Static()
-            
-            with Horizontal(classes="col-span-3 button--container"):
+
+            with Horizontal(classes="button--container"):
                 yield Button("Save Changes", id="save_edit", classes="edit buttons")
                 yield Button("Delete", id="delete", classes="edit buttons ml-2")
+
+            yield Static()
         
         yield Footer()
 
     def on_mount(self) -> None:
+
+        user_rank_select = self.query_one("#rank", Select)
+        user_rank_current = user_rank_select.query_one("SelectCurrent")
+        user_rank_current.border_title =" Rank"
+
+        edit_rank_select = self.query_one("#edit_rank", Select)
+        edit_rank_current = edit_rank_select.query_one("SelectCurrent")
+        edit_rank_current.border_title = "Edit Rank"
+
         table = self.query_one(DataTable)
         table.add_column("Username", width=20)
         table.add_column("Password", width=15)
@@ -150,11 +213,8 @@ class RivalsSmurfTracker(App):
         table.add_column("Level", width=10)
         table.add_column("Rank", width=20)
 
-
-        
-
     def on_button_pressed(self, event) -> None:
-        if event.button.id == "submit":
+        if event.button.id == "submit_btn":
             self.store_entry()
         elif event.button.id == "search_btn":
             self.search_entries()
