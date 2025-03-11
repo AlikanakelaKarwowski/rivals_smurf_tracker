@@ -14,7 +14,7 @@ class ErrorScreen(ModalScreen):
         layout: grid;
         grid-size: 2;
         grid-columns: 1fr 1fr ;
-        grid-rows: auto auto;
+        grid-rows: auto;
         padding: 2;
         width: 100%;
         height: auto;
