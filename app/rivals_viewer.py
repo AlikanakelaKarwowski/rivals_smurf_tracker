@@ -64,7 +64,7 @@ class RivalsSmurfTracker(App):
         min-height: 3; 
         color: white;
         text-style:bold;
-        width:100%; 
+       
         min-width: 10;
     }
     Button:hover, 
@@ -84,7 +84,6 @@ class RivalsSmurfTracker(App):
         background: #004225;
         outline: wide #004225; 
     }
-
     .buttons{
         width:50%;
         height:auto;
@@ -115,7 +114,7 @@ class RivalsSmurfTracker(App):
         padding: 2 0;
     }
 
-   Static{
+   #create_user_prompt, #edit_user_prompt{
         width: 100%;
         max-height: 30vh;
         text-align: left;
