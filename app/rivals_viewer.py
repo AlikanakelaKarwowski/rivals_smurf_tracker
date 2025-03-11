@@ -118,7 +118,7 @@ class RivalsSmurfTracker(App):
 
    #create_user_prompt, #edit_user_prompt{
         width: 100%;
-        max-height: 30vh;
+        max-height: 12vh;
         text-align: left;
     }
     """
