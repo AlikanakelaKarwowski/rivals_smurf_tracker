@@ -115,7 +115,6 @@ class RivalsSmurfTracker(App):
     #edit_user_prompt{
         padding: 2 0;
     }
-
    #create_user_prompt, #edit_user_prompt{
         width: 100%;
         max-height: 12vh;
@@ -205,7 +204,7 @@ class RivalsSmurfTracker(App):
 
         user_rank_select = self.query_one("#rank", Select)
         user_rank_current = user_rank_select.query_one("SelectCurrent")
-        user_rank_current.border_title =" Rank"
+        user_rank_current.border_title ="Rank"
 
         edit_rank_select = self.query_one("#edit_rank", Select)
         edit_rank_current = edit_rank_select.query_one("SelectCurrent")
