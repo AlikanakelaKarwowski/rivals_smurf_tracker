@@ -80,8 +80,8 @@ class RivalsSmurfTracker(App):
         outline: wide darkblue;
     }
     #submit_btn, #save_edit{
-        background: darkgreen;
-        outline: wide darkgreen; 
+        background: #004225;
+        outline: wide #004225; 
     }
     .button--container{
         align: center middle;
