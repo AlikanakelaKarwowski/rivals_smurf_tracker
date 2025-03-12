@@ -12,7 +12,7 @@ def get_valid_ranks(rank_value:int, RANK_MAP: dict[str,int], RANKS: list[str]) -
             valid_ranks.extend(range(rank_value + 1, rank_value + 4))
 
         # If rank is in Platinum, Diamond, or Grand Master
-        elif RANK_MAP["Platinum 3"] <= rank_value <= RANK_MAP["Eternal 1"]:
+        elif RANK_MAP["Platinum 3"] <= rank_value <= RANK_MAP["Celestial 1"]:
             valid_ranks.extend(range(max(rank_value - 3, 0), min(rank_value + 4, len(RANKS))))
 
         return valid_ranks

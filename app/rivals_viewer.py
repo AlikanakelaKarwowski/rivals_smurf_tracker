@@ -11,7 +11,7 @@ from app.utils.logger import logger
 
 # Rank Mapping from highest to lowest
 RANKS = [
-    "Eternal 1", "Eternal 2", "Eternal 3",
+    "Celestial 1", "Celestial 2", "Celestial 3",
     "Grand Master 1", "Grand Master 2", "Grand Master 3",
     "Diamond 1", "Diamond 2", "Diamond 3",
     "Platinum 1", "Platinum 2", "Platinum 3",
