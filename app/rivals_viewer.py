@@ -210,11 +210,11 @@ class RivalsSmurfTracker(App):
         edit_rank_current.border_title = "Edit Rank"
 
         table = self.query_one(DataTable)
-        table.add_column("Username")
-        table.add_column("Password")
-        table.add_column("UID")
-        table.add_column("Level")
-        table.add_column("Rank")
+        table.add_column("Username", width=25)
+        table.add_column("Password", width=25)
+        table.add_column("UID", width=25)
+        table.add_column("Level", width=25)
+        table.add_column("Rank", width=25)
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "submit_btn":
