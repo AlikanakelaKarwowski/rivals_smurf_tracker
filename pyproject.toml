@@ -18,3 +18,13 @@ dev = [
     "pytest>=8.3.4",
     "textual-dev>=1.7.0",
 ]
+
+[tool.cxfreeze]
+executables = [
+    {script = "./app/rivals_viewer.py", base = "console"}]
+
+[tool.cxfreeze.build_exe]
+includes = ["app"]
+packages = ["sqlmodel", "sqlalchemy","textual", "textual._tree_sitter"]
+excludes = ["pytest", "cx_Freeze", "textual-dev"]
+zip_include_packages = ["sqlmodel", "textual"]
