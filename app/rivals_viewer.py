@@ -1,10 +1,11 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
-from textual.containers import Horizontal, Vertical, Container, HorizontalGroup
+from textual.containers import Horizontal, Container
 from textual.coordinate import Coordinate
 from app.utils.dbo import User, engine, init_db
 from app.utils.rank_utils import get_valid_ranks
 from app.utils.error_screen import ErrorScreen
+from app.utils.stretchy_datatable import StretchyDataTable
 from sqlmodel import Session
 from app.utils.UserError import UserError
 from app.utils.logger import logger
@@ -163,9 +164,8 @@ class RivalsSmurfTracker(App):
             # Search content
             yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
 
-            yield DataTable(id="results", cursor_type="row", classes="datatable col-span-3")
+            yield StretchyDataTable(id="results", cursor_type="row", classes="datatable col-span-3")
 
-        
             edit_username = Input(placeholder="Edit Username", id="edit_username", classes="edit")
             edit_username.border_title = "Edit Username"
             yield edit_username
@@ -178,7 +178,6 @@ class RivalsSmurfTracker(App):
             edit_rank.border_title = "Edit Rank"
             yield edit_rank  
 
-        
             edit_uid = Input(placeholder="Edit UID", id="edit_uid", classes="edit")
             edit_uid.border_title = "Edit UID"
             yield edit_uid
@@ -226,7 +225,7 @@ class RivalsSmurfTracker(App):
         elif event.button.id == "delete":
             self.delete_entry()
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+    def on_data_table_row_selected(self, event: StretchyDataTable.RowSelected) -> None:
         
         username = self.query_one("#edit_username")
         username.display = True
