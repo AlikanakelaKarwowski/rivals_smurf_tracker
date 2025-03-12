@@ -152,15 +152,14 @@ class RivalsSmurfTracker(App):
             user_level.border_title = "Level"
             yield user_level
 
-            yield Button("Search", id="search_btn", classes="search ")
-           
+            yield Button("Submit", id="submit_btn", classes="submit ")
+ 
             search_input = Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
             search_input.border_title = "Search"
             yield search_input
 
-        
-            yield Button("Submit", id="submit_btn", classes="submit ")
-
+            yield Button("Search", id="search_btn", classes="search ")
+            
             # Search content
             yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
 
