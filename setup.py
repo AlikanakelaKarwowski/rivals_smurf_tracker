@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 includes = ["app"]
 packages = ["sqlmodel", "sqlalchemy","textual", "textual._tree_sitter"]
 excludes = ["pytest", "cx_Freeze", "textual-dev", "textual-serve", "aiohttp", "click", "msgpack", "colorana", "iniconfig", "packaging", "pluggy", "cx-logging", "dmgbuild","filelock", "lief", "patchelf"]
-zip_include_packages = []
+zip_include_packages: list[str] = []
 build_options = {'packages': packages, 'excludes': excludes, 'includes': includes, 'zip_include_packages': zip_include_packages}
 
 base = 'console'
