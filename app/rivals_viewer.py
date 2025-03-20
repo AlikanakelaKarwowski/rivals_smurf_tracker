@@ -7,7 +7,7 @@ from app.utils.rank_utils import get_valid_ranks
 from app.utils.error_screen import ErrorScreen
 from app.utils.stretchy_datatable import StretchyDataTable
 from sqlmodel import Session
-from app.utils.UserError import UserError
+from app.utils.User_Error import UserError
 from app.utils.logger import logger
 
 # Rank Mapping from highest to lowest
@@ -26,6 +26,10 @@ RANK_MAP = {rank: i for i, rank in enumerate(reversed(RANKS))}
 class RivalsSmurfTracker(App):
     
     CSS = """
+    Screen{
+        width: 100vw;
+        height: 100vh;
+    }
     .container {
         layout: grid;
         grid-size: 3;
@@ -35,7 +39,7 @@ class RivalsSmurfTracker(App):
         padding: 1 3;
         content-align: center middle;
         width: 100%;
-        overflow: auto;
+        height:auto;
     }
     .col-span-2{
         column-span: 2;
@@ -46,14 +50,13 @@ class RivalsSmurfTracker(App):
     .container > *{
         width:100%;
     }
-    #edit_prompt,
-    #edit_username,
-    #edit_password,
-    #edit_rank,
-    #save_edit,
-    #delete,
-    .edit {
-        display: none;
+    #datatable_container{
+        padding: 1 3;
+        height: auto;
+        width: 100%;
+    }
+    .button--container{
+        height: auto;
     }
     Button{ 
         height: auto;
@@ -66,11 +69,6 @@ class RivalsSmurfTracker(App):
     Button:hover, 
     Button:focus {
         outline: wide #0178D4 !important;
-    }
-    #edit_buttons {
-        height: auto; 
-        min-height: 3; 
-        padding-bottom: 1; 
     }
      #search_btn {
         background: darkblue;
@@ -106,21 +104,23 @@ class RivalsSmurfTracker(App):
         padding: 1 0;
         width: 100%;
         height: auto;
-     }
-    .datatable {
-        width: 100%;
-        height: 50vh;
-        min-height: 10vh; 
-        overflow: auto;
     }
-    #edit_user_prompt{
-        padding: 2 0;
+    .datatable {
+        min-height: 10vh;
+        width: 100%;
+        height: 30vh;
+        overflow: auto;
     }
    #create_user_prompt, #edit_user_prompt{
         width: 100%;
         max-height: 12vh;
+        margin: 1 0;
         text-align: left;
     }
+    #edit_user_prompt{
+        margin-bottom: 3;
+    }
+
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
@@ -128,7 +128,7 @@ class RivalsSmurfTracker(App):
 
         yield Header()
 
-        with Container(classes="container"):
+        with Container(id="create_user_container", classes="container"):
             
             # Create user content
             yield Static("Fill in the details below to create a new user entry. Username, password, and rank are required fields. You can also search for existing users using the search box.", id="create_user_prompt", classes="col-span-3")
@@ -161,11 +161,13 @@ class RivalsSmurfTracker(App):
 
             yield Button("Search", id="search_btn", classes="search ")
             
-            # Search content
+        # Search content
+        with Container(id="datatable_container"):
             yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
 
-            yield StretchyDataTable(id="results", cursor_type="row", classes="datatable col-span-3")
+            yield StretchyDataTable(id="results", cursor_type="row", classes="datatable")
 
+        with Container(id="edit_container", classes="container"):
             edit_username = Input(placeholder="Edit Username", id="edit_username", classes="edit")
             edit_username.border_title = "Edit Username"
             yield edit_username
@@ -194,8 +196,6 @@ class RivalsSmurfTracker(App):
                 yield Button("Save Changes", id="save_edit", classes="edit buttons")
                 yield Button("Delete", id="delete", classes="edit buttons ml-2")
 
-            yield Static()
-        
         yield Footer()
 
     def on_mount(self) -> None:
@@ -227,26 +227,22 @@ class RivalsSmurfTracker(App):
 
     def on_data_table_row_selected(self, event: StretchyDataTable.RowSelected) -> None:
         
+        self.query_one("#edit_container").display = True
+
         username = self.query_one("#edit_username")
-        username.display = True
         username.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 0)))
+
         password = self.query_one("#edit_password")
-        password.display = True
         password.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1)))
+
         uid = self.query_one("#edit_uid")
-        uid.display = True
         uid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)) or "")
 
         level = self.query_one("#edit_level")
-        level.display = True
         level.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 3)) or "")
+
         rank = self.query_one("#edit_rank")
-        rank.display = True
-
-        self.query_one("#edit_rank").value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 4)) or Select.BLANK
-
-        self.query_one("#save_edit").display = True
-        self.query_one("#delete").display = True
+        rank.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 4)) or Select.BLANK
         
     def store_entry(self):
 
@@ -384,24 +380,8 @@ class RivalsSmurfTracker(App):
         self.search_entries()
         self.hide_edit()
 
-
     def hide_edit(self):
-        username = self.query_one("#edit_username")
-        username.display = False
-        username.value = ""
-        password = self.query_one("#edit_password")
-        password.display = False
-        password.value = ""
-        uid = self.query_one("#edit_uid")
-        uid.display = False
-        uid.value = ""
-        level = self.query_one("#edit_level")
-        level.display = False
-        level.value = ""
-        rank = self.query_one("#edit_rank")
-        rank.display = False
-        self.query_one("#save_edit").display = False
-        self.query_one("#delete").display = False
+        self.query_one("#edit_container").display = False
 
 def main_run() -> None:
     try:
