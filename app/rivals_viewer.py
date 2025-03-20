@@ -109,7 +109,7 @@ class RivalsSmurfTracker(App):
         min-height: 10vh;
         width: 100%;
         height: 30vh;
-        overflow: auto;
+        overflow-x: hidden;
     }
    #create_user_prompt, #edit_user_prompt{
         width: 100%;
