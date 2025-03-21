@@ -285,18 +285,23 @@ class RivalsSmurfTracker(App):
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
         with Session(engine) as session:
-         try:
-            if search_query in RANK_MAP:
-                rank_value = RANK_MAP[search_query]
-                valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
-                results = User.get_users_by_ranks(session, valid_ranks)
-            else:
-                results = User.get_users_by_username(session, search_query)
-         except Exception as e:
+            try:
+                rank_match = None
+                for rank in RANK_MAP:
+                    if rank.lower() == search_query.lower():
+                        rank_match = rank
+                        break
+                if rank_match:
+                    rank_value = RANK_MAP[rank_match]
+                    valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
+                    results = User.get_users_by_ranks(session, valid_ranks)
+                else:
+                    results = User.get_users_by_username(session, search_query)
+            except Exception as e:
                 logger.error(f"Error searching for users: {e}")
                 self.push_screen(ErrorScreen("An error occurred while searching. Try again."))
                 return
-        
+
         table = self.query_one(DataTable)
         table.clear()
         for row in results:
