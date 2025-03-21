@@ -14,10 +14,6 @@ class User(SQLModel, table=True):
     rank: str
     rank_value: int
     
-    def save(self, session: Session) -> None:
-        session.add(self)
-        session.commit()
-
     @classmethod
     def does_user_exists(cls, session: Session, username: str = None, uid: str = None) -> bool:
         """Check if a user with the given username or uid exists."""
