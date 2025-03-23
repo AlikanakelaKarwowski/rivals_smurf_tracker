@@ -2,7 +2,9 @@
 name = "rivals-smurf-tracker"
 version = "0.3.0"
 description = "TUI to keep track of Marvel Rival Alt Accounts"
+authors = [{name = "Alex Karwowski", email = "akk96.developer@gmail.com0"}, {name = "Walter Hart Jr.", email = "wally@walterhart.net"}]
 readme = "README.md"
+
 requires-python = ">=3.12"
 dependencies = [
     "sqlmodel>=0.0.22",
@@ -23,5 +25,5 @@ executables = [
 [tool.cxfreeze.build_exe]
 includes = ["app"]
 packages = ["sqlmodel", "sqlalchemy","textual", "textual._tree_sitter"]
-excludes = ["pytest", "cx_Freeze"]
+excludes = ["pytest", "cx_Freeze", "textual-dev"]
 zip_include_packages = ["sqlmodel", "textual"]

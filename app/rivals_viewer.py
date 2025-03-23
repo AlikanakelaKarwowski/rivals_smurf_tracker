@@ -1,17 +1,18 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Input, Button, Select, DataTable, Header, Footer, Static
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Container
 from textual.coordinate import Coordinate
 from app.utils.dbo import User, engine, init_db
 from app.utils.rank_utils import get_valid_ranks
 from app.utils.error_screen import ErrorScreen
+from app.utils.stretchy_datatable import StretchyDataTable
 from sqlmodel import Session
-from app.utils.UserError import UserError
+from app.utils.User_Error import UserError
 from app.utils.logger import logger
 
 # Rank Mapping from highest to lowest
 RANKS = [
-    "Eternal 1", "Eternal 2", "Eternal 3",
+    "Celestial 1", "Celestial 2", "Celestial 3",
     "Grand Master 1", "Grand Master 2", "Grand Master 3",
     "Diamond 1", "Diamond 2", "Diamond 3",
     "Platinum 1", "Platinum 2", "Platinum 3",
@@ -22,84 +23,200 @@ RANKS = [
 RANK_MAP = {rank: i for i, rank in enumerate(reversed(RANKS))}
 
 # Database setup
-
-
 class RivalsSmurfTracker(App):
+    
     CSS = """
-    #submit {
-        background: green;
+    Screen{
+        width: 100vw;
+        height: 100vh;
+    }
+    .container {
+        layout: grid;
+        grid-size: 3;
+        grid-columns: 1fr 1fr 0.5fr;
+        grid-rows: auto;
+        grid-gutter:  1 1;
+        padding: 1 3;
+        content-align: center middle;
+        width: 100%;
+        height:auto;
+    }
+    .col-span-2{
+        column-span: 2;
+    }
+    .col-span-3{
+        column-span: 3;
+    }
+    .container > *{
+        width:100%;
+    }
+    #datatable_container{
+        padding: 1 3;
+        height: auto;
+        width: 100%;
+    }
+    .button--container{
+        height: auto;
+    }
+    Button{ 
+        height: auto;
+        padding: 1 0;
+        min-height: 3; 
         color: white;
+        text-style:bold;
+        min-width: 10;
     }
-    #search_btn {
-        background: blue;
-        color: white;
+    Button:hover, 
+    Button:focus {
+        outline: wide #0178D4 !important;
     }
-    #edit_prompt {
-        display: none;
+     #search_btn {
+        background: darkblue;
+        outline: wide darkblue;
     }
-    #edit_username {
-        display: none;
-    }
-    #edit_password {
-        display: none;
-    }
-    #edit_rank {
-        display: none;
-    }
-    #save_edit {
-        display: none;
-        background: green;
+    #submit_btn, #save_edit{
+        background: #004225;
+        outline: wide #004225; 
     }
     #delete {
-        display: none;
         background: maroon;
+        outline: wide maroon;
     }
-    .edit {
-        display: none;
+    .buttons{
+        width:50%;
+        height:auto;
     }
-    #edit_buttons {
-        height: auto; 
-        min-height: 3; 
-        padding-bottom: 1; 
+    .ml-2{
+        margin-left:2
+    }
+    Input{
+        border: wide white;
+        padding: 1 0;
+        height: auto;
+        text-align: center;
+        color: white;
+    }
+    Input:hover,  Select:hover > SelectCurrent, Select:focus > SelectCurrent , Input:focus{
+        border: wide  #0178D4;
+    }
+     Select > SelectCurrent {
+        border: wide white;
+        padding: 1 0;
+        width: 100%;
+        height: auto;
+    }
+    .datatable {
+        min-height: 10vh;
+        width: 100%;
+        height: 30vh;
+        overflow-x: hidden;
+    }
+   #create_user_prompt, #edit_user_prompt{
+        width: 100%;
+        max-height: 12vh;
+        margin: 1 0;
+        text-align: left;
+    }
+    #edit_user_prompt{
+        margin-bottom: 3;
     }
 
     """
     BINDINGS = [("ctrl+q", "quit", "CTRL+Q to Quit")]
 
     def compose(self) -> ComposeResult:
+
         yield Header()
-        yield Input(placeholder="Enter your username", id="username", classes="userpass")
-        yield Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
-        yield Input(placeholder ="Enter your UID", id="uid", classes="userpass")
-        yield Input(placeholder="Enter your level", id="level", classes="userpass")
 
-        yield Select([(rank, rank) for rank in RANKS], prompt="Select a rank", id="rank", classes="selection")
-        yield Button("Submit", id="submit", classes="selection")
+        with Container(id="create_user_container", classes="container"):
+            
+            # Create user content
+            yield Static("Fill in the details below to create a new user entry. Username, password, and rank are required fields. You can also search for existing users using the search box.", id="create_user_prompt", classes="col-span-3")
 
-        yield Input(placeholder="Search by username or rank", id="search", classes="search")
-        yield Button("Search", id="search_btn", classes="search")
+            username_input = Input(placeholder="Enter your username", id="username", classes="username-border")
+            username_input.border_title = "Username"
+            yield username_input
+           
+            user_password = Input(placeholder="Enter your password", id="password", password=True, classes="userpass")
+            user_password.border_title ="Password"
+            yield  user_password
 
+            userrank_selection = Select([(rank, rank) for rank in RANKS], prompt="Select ", id="rank", classes="selection")
+            userrank_selection.border_title="Rank"
+            yield userrank_selection
 
-        yield DataTable(id="results", cursor_type="row", classes="results")
-        yield Static("Click an entry to edit", id="edit_prompt", classes="results")
+            user_uid = Input(placeholder ="Enter your UID", id="uid", classes="useruid")
+            user_uid.border_title="UID"
+            yield  user_uid
 
-        yield Input(placeholder="Edit Username", id="edit_username", classes="edit")
-        yield Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
-        yield Input(placeholder="Edit uid", id="edit_uid", classes="edit")
-        yield Input(placeholder="Edit Level", id="edit_level", classes="edit")
+            user_level = Input(placeholder="Enter your level", id="level", classes="userlevel")
+            user_level.border_title = "Level"
+            yield user_level
 
-        yield Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
-        with Horizontal(id="edit_buttons"):
-            yield Button("Save Changes", id="save_edit", classes="edit")
-            yield Button("Delete", id="delete", classes="edit")
-        
+            yield Button("Submit", id="submit_btn", classes="submit ")
+ 
+            search_input = Input(placeholder="Search by username or rank", id="search", classes="search col-span-2")
+            search_input.border_title = "Search"
+            yield search_input
+
+            yield Button("Search", id="search_btn", classes="search ")
+            
+        # Search content
+        with Container(id="datatable_container"):
+            yield Static("Click on the row you would like to edit or delete.", id="edit_user_prompt", classes="col-span-3")
+
+            yield StretchyDataTable(id="results", cursor_type="row", classes="datatable")
+
+        with Container(id="edit_container", classes="container"):
+            edit_username = Input(placeholder="Edit Username", id="edit_username", classes="edit")
+            edit_username.border_title = "Edit Username"
+            yield edit_username
+
+            edit_password = Input(placeholder="Edit Password", id="edit_password", password=True, classes="edit")
+            edit_password.border_title = "Edit Password"
+            yield edit_password
+
+            edit_rank = Select([(rank, rank) for rank in RANKS], id="edit_rank", classes="editrank")
+            edit_rank.border_title = "Edit Rank"
+            yield edit_rank  
+
+            edit_uid = Input(placeholder="Edit UID", id="edit_uid", classes="edit")
+            edit_uid.border_title = "Edit UID"
+            yield edit_uid
+
+            edit_level = Input(placeholder="Edit Level", id="edit_level", classes="edit")
+            edit_level.border_title = "Edit Level"
+            yield edit_level
+
+            yield Static() #Empty grid cell 
+
+            yield Static()
+
+            with Horizontal(classes="button--container"):
+                yield Button("Save Changes", id="save_edit", classes="edit buttons")
+                yield Button("Delete", id="delete", classes="edit buttons ml-2")
+
         yield Footer()
 
     def on_mount(self) -> None:
-        self.query_one(DataTable).add_columns("Username", "Password", "uid", "Level", "Rank")
+
+        user_rank_select = self.query_one("#rank", Select)
+        user_rank_current = user_rank_select.query_one("SelectCurrent")
+        user_rank_current.border_title ="Rank"
+
+        edit_rank_select = self.query_one("#edit_rank", Select)
+        edit_rank_current = edit_rank_select.query_one("SelectCurrent")
+        edit_rank_current.border_title = "Edit Rank"
+
+        table = self.query_one(DataTable)
+        table.add_column("Username", width=25)
+        table.add_column("Password", width=25)
+        table.add_column("UID", width=25)
+        table.add_column("Level", width=25)
+        table.add_column("Rank", width=25)
 
     def on_button_pressed(self, event) -> None:
-        if event.button.id == "submit":
+        if event.button.id == "submit_btn":
             self.store_entry()
         elif event.button.id == "search_btn":
             self.search_entries()
@@ -108,28 +225,24 @@ class RivalsSmurfTracker(App):
         elif event.button.id == "delete":
             self.delete_entry()
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+    def on_data_table_row_selected(self, event: StretchyDataTable.RowSelected) -> None:
         
+        self.query_one("#edit_container").display = True
+
         username = self.query_one("#edit_username")
-        username.display = True
         username.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 0)))
+
         password = self.query_one("#edit_password")
-        password.display = True
         password.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 1)))
+
         uid = self.query_one("#edit_uid")
-        uid.display = True
         uid.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 2)) or "")
 
         level = self.query_one("#edit_level")
-        level.display = True
         level.value = str(self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 3)) or "")
+
         rank = self.query_one("#edit_rank")
-        rank.display = True
-
-        self.query_one("#edit_rank").value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 4)) or Select.BLANK
-
-        self.query_one("#save_edit").display = True
-        self.query_one("#delete").display = True
+        rank.value = self.query_one(DataTable).get_cell_at(Coordinate(event.cursor_row, 4)) or Select.BLANK
         
     def store_entry(self):
 
@@ -172,18 +285,23 @@ class RivalsSmurfTracker(App):
     def search_entries(self):
         search_query = self.query_one("#search", Input).value.strip()
         with Session(engine) as session:
-         try:
-            if search_query in RANK_MAP:
-                rank_value = RANK_MAP[search_query]
-                valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
-                results = User.get_users_by_ranks(session, valid_ranks)
-            else:
-                results = User.get_users_by_username(session, search_query)
-         except Exception as e:
+            try:
+                rank_match = None
+                for rank in RANK_MAP:
+                    if rank.lower() == search_query.lower():
+                        rank_match = rank
+                        break
+                if rank_match:
+                    rank_value = RANK_MAP[rank_match]
+                    valid_ranks = get_valid_ranks(rank_value, RANK_MAP, RANKS)
+                    results = User.get_users_by_ranks(session, valid_ranks)
+                else:
+                    results = User.get_users_by_username(session, search_query)
+            except Exception as e:
                 logger.error(f"Error searching for users: {e}")
                 self.push_screen(ErrorScreen("An error occurred while searching. Try again."))
                 return
-        
+
         table = self.query_one(DataTable)
         table.clear()
         for row in results:
@@ -267,24 +385,8 @@ class RivalsSmurfTracker(App):
         self.search_entries()
         self.hide_edit()
 
-
     def hide_edit(self):
-        username = self.query_one("#edit_username")
-        username.display = False
-        username.value = ""
-        password = self.query_one("#edit_password")
-        password.display = False
-        password.value = ""
-        uid = self.query_one("#edit_uid")
-        uid.display = False
-        uid.value = ""
-        level = self.query_one("#edit_level")
-        level.display = False
-        level.value = ""
-        rank = self.query_one("#edit_rank")
-        rank.display = False
-        self.query_one("#save_edit").display = False
-        self.query_one("#delete").display = False
+        self.query_one("#edit_container").display = False
 
 def main_run() -> None:
     try:
